@@ -183,6 +183,10 @@ def evaluate_other(cfg, model, aggregation_level, group, hid):
 
 
 def fit_model(cfg, model, train_input, train_labels):
+    model.fit(np.array(train_input), np.array(train_labels), cfg.BATCH_SIZE, cfg.EPOCHS, verbose=2, shuffle=True)
+    return model
+
+    """
     best_mape = 999999999
 
     best_model = clone_model(model)
@@ -199,7 +203,8 @@ def fit_model(cfg, model, train_input, train_labels):
             # Copy weigths from model to best model
             best_model.set_weights(model.get_weights())
 
-    return best_model
+    return best_model   
+    """
 
 
 def construct_training_data(cfg, data):
