@@ -5,11 +5,13 @@ from keras.optimizers import *
 
 class BaseConfig:
     def __init__(self):
-        self.EPOCHS = 50
+        self.EPOCHS = 500
         self.BATCH_SIZE = 128
 
         self.DAYS = 7
         self.HOURS_FUTURE = 24
+
+        self.AMOUNTOFHOUSES = 20
 
         self.CRITICAL_START = 16
         self.CRITICAL_END = 23
@@ -23,7 +25,7 @@ class BaseConfig:
         self.OPTIMIZER = Adamax()
 
         self.TRAINING_CUT = 0.7
-        self.DATA_SLICE = 0.1
+        self.DATA_SLICE = 1
         self.GRAPH_CUT = 1
 
     def dump(self):

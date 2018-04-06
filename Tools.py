@@ -6,30 +6,41 @@ from keras import backend as K
 from keras.losses import mean_squared_error
 from keras.models import clone_model
 
-HourData = namedtuple('HourData', ['house_id', 'timestamp', 'consumption'])
+HourData = namedtuple('HourData', ['timestamp', 'consumption'])
 
 
 def root_mean_squared_error(y_true, y_pred):
     return K.sqrt(mean_squared_error(y_true, y_pred))
 
 
-def fetch_data(aggregation_level, group, hid):
-    table = aggregation_level + "_" + group + "_energy_consumption"
+def fetch_data(AMOUNTOFHOUSES):
 
     connection = mysql.connector.connect(host='localhost', user='root', password='root',
                                          database='households_energy_consumption')
 
     cursor = connection.cursor()  # Queries can be made through this Cursor object
 
-    query = "SELECT house_id, timestamp, consumption  FROM " + table + " WHERE house_id = " + str(hid) + " ORDER BY timestamp;"
+    # Counts how many households we are working with
+    query = "SELECT COUNT(DISTINCT(house_id)) " \
+            "FROM households_energy_consumption.hourly_multiple_households_energy_consumption " \
+            "WHERE house_id < " + str(AMOUNTOFHOUSES) + ";"
+
+    cursor.execute(query)
+
+    amount_of_houses = cursor.fetchall()[0][0]
+
+    #99 er 10år,
+    query = "SELECT timestamp, SUM(consumption) as consumption " \
+            "FROM households_energy_consumption.hourly_multiple_households_energy_consumption " \
+            "WHERE house_id < " + str(AMOUNTOFHOUSES) + " GROUP BY timestamp ORDER BY timestamp;"
 
     cursor.execute(query)
 
     data = []
 
-    for (house_id, timestamp, consumption) in cursor:
-        # print("{}, {}, {}".format(house_id, str(timestamp), consumption))
-        data.append(HourData(house_id, timestamp, consumption))
+    # Divides the summed consumption with the amount of houses to get the average consumption for a household,
+    for (timestamp, consumption) in cursor:
+        data.append(HourData(timestamp, (consumption / amount_of_houses)))
 
     return data
 
@@ -95,12 +106,12 @@ def evaluate(model, eval_input, eval_labels, graph_cut=1, show_graph=True):
         predictions.append(res)
         labels.append(label)
 
-        error = abs(res - label)
+        error = abs(res - float(label))
 
         if error > max_error:
             max_error = error
 
-        total_error_percent += error / label * 100
+        total_error_percent += error / float(label) * 100
         total_error += error
 
         i += 1
@@ -127,7 +138,7 @@ def evaluate_freq(model, eval_input, eval_labels):
         res = p_1[0][0]
         label = eval_labels[i][0]
 
-        error = (res - label) / label * 100
+        error = (res - float(label)) / float(label) * 100
         errors.append(error)
 
     intervals = [2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35, 37.5, 40, 42.5, 45, 47.5, 1000]

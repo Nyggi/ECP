@@ -10,7 +10,7 @@ cfg = SingleConfig()
 
 INPUT_SHAPE = (cfg.DAYS * 24,)
 
-data = fetch_data(AGGREGATION_LEVEL, GROUP, 99)
+data = fetch_data(cfg.AMOUNTOFHOUSES)
 
 train_input, train_labels, eval_input, eval_labels = construct_training_data(cfg, data)
 
@@ -31,4 +31,4 @@ evaluate(fitted_model, eval_input, eval_labels, cfg.GRAPH_CUT)
 
 # evaluate_freq(best_model, eval_input, eval_labels)
 
-evaluate_other(cfg, fitted_model, AGGREGATION_LEVEL, GROUP, 1)
+# evaluate_other(cfg, fitted_model, AGGREGATION_LEVEL, GROUP, 1)
