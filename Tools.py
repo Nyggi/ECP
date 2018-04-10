@@ -5,8 +5,15 @@ import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.losses import mean_squared_error
 from keras.models import clone_model
+from pandas import read_csv
+from pandas import datetime
 
 HourData = namedtuple('HourData', ['house_id', 'timestamp', 'consumption'])
+
+
+# date-time parsing function for loading the dataset for energy consumption
+def parser_energy(x):
+    return datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
 
 
 def root_mean_squared_error(y_true, y_pred):
@@ -31,6 +38,15 @@ def fetch_data(aggregation_level, group, hid):
         # print("{}, {}, {}".format(house_id, str(timestamp), consumption))
         data.append(HourData(house_id, timestamp, consumption))
 
+    return data
+
+
+def fetch_data_csv(filename):
+    raw_data = read_csv(filename, header=0, parse_dates=[0], index_col=0, squeeze=True,
+                        date_parser=parser_energy, skiprows=0)
+    data = list()
+    for value in raw_data:
+        data.append(HourData(1, 1, value))
     return data
 
 
@@ -129,29 +145,59 @@ def evaluate_freq(model, eval_input, eval_labels):
 
         error = (res - label) / label * 100
         errors.append(error)
-
-    intervals = [2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35, 37.5, 40, 42.5, 45, 47.5, 1000]
-
-    i = 0
-    freq = [0 for k in range(len(intervals))]
-    entries = len(errors)
-    for p in intervals:
-        for e in errors:
-            if -p < e < p:
-                freq[i] += 1
-                errors.remove(e)
         i += 1
 
-    for i in range(len(freq)):
-        freq[i] = freq[i] / entries * 100
-
-    x = intervals[:-1]
-    x.append(50)
-
-    plt.bar(x, freq, width=0.8)
-    plt.xlabel("Percent error +-")
-    plt.ylabel("Frequency %")
+    plot_error_freq(errors)
+    plot_cumu_abs_error_freq(errors)
     plt.show()
+
+
+def plot_error_freq(errors):
+    bins = 25  # Odd number
+    bin_min = -50
+    bin_max = 50
+    bin_diff = abs(bin_min - bin_max) / bins
+    bins_list = [-10000]
+
+    for i in range(bins - 1):
+        bins_list.append(bin_min + (bin_diff * (i + 1)))
+
+    bins_list.append(10000)
+
+    weights = np.ones_like(errors) / float(len(errors)) * 100
+
+    plt.hist(errors, bins=bins_list, weights=weights, edgecolor='black', linewidth=0.5)
+    plt.xlim(xmin=bin_min, xmax=bin_max)
+    plt.xlabel("Percentage error %")
+    plt.ylabel("Frequency %")
+    plt.xticks(np.arange(bin_min, bin_max + 1, step=10))
+    plt.minorticks_on()
+    plt.figure()
+
+
+def plot_cumu_abs_error_freq(errors):
+    abs_errors = [abs(x) for x in errors]
+
+    bins = 13  # Odd number
+    bin_min = -2
+    bin_max = 50
+    bin_diff = abs(bin_min - bin_max) / bins
+    bins_list = [-10000]
+
+    for i in range(bins - 1):
+        bins_list.append(bin_min + (bin_diff * (i + 1)))
+
+    bins_list.append(10000)
+
+    weights = np.ones_like(errors) / float(len(errors)) * 100
+
+    plt.hist(abs_errors, bins=bins_list, weights=weights, edgecolor='black', linewidth=0.5, cumulative=True)
+    plt.xlim(xmin=0, xmax=bin_max)
+    plt.xlabel("Cumulative Absolute Percentage error %")
+    plt.ylabel("Frequency %")
+    plt.xticks(np.arange(0, bin_max + 1, step=10))
+    plt.minorticks_on()
+    plt.figure()
 
 
 def evaluate_other(cfg, model, aggregation_level, group, hid):

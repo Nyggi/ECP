@@ -12,6 +12,8 @@ INPUT_SHAPE = (cfg.DAYS * 24,)
 
 data = fetch_data(AGGREGATION_LEVEL, GROUP, 99)
 
+#data = fetch_data_csv('ten_years.csv')
+
 train_input, train_labels, eval_input, eval_labels = construct_training_data(cfg, data)
 
 mb = ModelBuilder(cfg, INPUT_SHAPE)
@@ -29,6 +31,6 @@ for thing in evaluation:
 
 evaluate(fitted_model, eval_input, eval_labels, cfg.GRAPH_CUT)
 
-# evaluate_freq(best_model, eval_input, eval_labels)
+evaluate_freq(fitted_model, eval_input, eval_labels)
 
-evaluate_other(cfg, fitted_model, AGGREGATION_LEVEL, GROUP, 1)
+#evaluate_other(cfg, fitted_model, AGGREGATION_LEVEL, GROUP, 1)
