@@ -29,7 +29,7 @@ for thing in evaluation:
 
 evaluate(fitted_model, eval_input, eval_labels, cfg.GRAPH_CUT)
 
-# evaluate_freq(best_model, eval_input, eval_labels)
+evaluate_freq(fitted_model, eval_input, eval_labels)
 
 # evaluate_other(cfg, fitted_model, AGGREGATION_LEVEL, GROUP, 1)
 
