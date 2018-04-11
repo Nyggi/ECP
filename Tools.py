@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.losses import mean_squared_error
-from keras.models import clone_model
+import pandas
 
 HourData = namedtuple('HourData', ['timestamp', 'consumption'])
 
@@ -87,7 +87,43 @@ def transform_data_for_nn(cfg, data):
     return input_data, targets, extra_train, extra_labels
 
 
+def make_correlation_matrix():
+    path = "PandasData.csv"
+    names = []
+
+    for thing in range(168):
+        names.append(str(thing))
+    names.append("output")
+
+    data = pandas.read_csv(path, names=names)
+    correlations = data.corr()
+    # plot correlation matrix
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(correlations, vmin=-1, vmax=1)
+    fig.colorbar(cax)
+    ticks = np.arange(0, 169, 1)
+    ax.set_xticks(ticks)
+    ax.set_yticks(ticks)
+    ax.set_xticklabels(names)
+    ax.set_yticklabels(names)
+    plt.show()
+
+
+def prepare_data_for_correlation(input, output):
+    f = open("PandasData.csv", "a+")
+
+    for thing in input:
+        f.write(str(thing))
+        f.write(",")
+
+    f.write(str(output))
+    f.write("\n")
+
+
 def evaluate(model, eval_input, eval_labels, graph_cut=1, show_graph=True):
+    open("PandasData.csv", 'w').close()
+
     i = 0
     total_error = 0
     total_error_percent = 0
@@ -113,6 +149,8 @@ def evaluate(model, eval_input, eval_labels, graph_cut=1, show_graph=True):
 
         total_error_percent += error / float(label) * 100
         total_error += error
+
+        prepare_data_for_correlation(inputD, res)
 
         i += 1
 
