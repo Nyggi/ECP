@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.losses import mean_squared_error
 from keras.models import clone_model
+import json
 
 HourData = namedtuple('HourData', ['house_id', 'timestamp', 'consumption'])
 
@@ -210,3 +211,27 @@ def construct_training_data(cfg, data):
     eval_labels = labels[validation_cut:]
 
     return train_input, train_labels, eval_input, eval_labels
+
+
+def weight_mmma(model):
+    weights = model.get_weights()
+
+    layers = []
+
+    for layer in weights:
+        nodes = []
+        for node in layer:
+            weight_min = min(node)
+            weight_max = max(node)
+            median = node[len(node) // 2]
+            average = sum(node)/len(node)
+
+            weight_string = f'MIN {weight_min:.4f}, MAX {weight_max:.4f}, Median {median:.4f}, AVG {average:.4f}'
+            nodes.append(weight_string)
+
+        layers.append(nodes)
+
+    with open('weights_mmma.json', 'w') as outfile:
+        json_string = json.dumps(layers)
+        outfile.write(json_string)
+

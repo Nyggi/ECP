@@ -75,3 +75,12 @@ class ModelBuilder:
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape"])
 
         return model
+
+    def nn_lin(self):
+        model = Sequential()
+
+        model.add(Dense(1, use_bias=self.bias, input_shape=self.input_shape))
+
+        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape"])
+
+        return model
