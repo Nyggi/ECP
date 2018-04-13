@@ -55,7 +55,7 @@ def get_consumptions(data):
     consumptions = []
 
     for d in data:
-        consumptions.append([d.consumption])
+        consumptions.append(d.consumption)
 
     return consumptions
 
@@ -63,34 +63,35 @@ def get_consumptions(data):
 def transform_data_for_nn(cfg, data):
     input_data = []
     targets = []
-    extra_train = []
-    extra_labels = []
 
     for q in range(cfg.DAYS * 24, len(data) - (24 * cfg.DAYS + cfg.HOURS_FUTURE)):
         l = []
 
         c = 0
         for i in range(q, q + 24 * cfg.DAYS):
-            l.append(data[i][0])
+            l.append(data[i])
             c += 1
 
-        label = [data[q + 24 * cfg.DAYS + cfg.HOURS_FUTURE][0]]
+        label = data[q + 24 * cfg.DAYS + cfg.HOURS_FUTURE]
 
         input_data.append(l)
         targets.append(label)
 
-        if cfg.CRITICAL_START <= q % 24 <= cfg.CRITICAL_END:
-            extra_train.append(l)
-            extra_labels.append(label)
+    return input_data, targets
 
-        day = q // 24
 
-        if day % 7 == 0 or day % 7 == 5 or day % 7 == 6:
-            if cfg.CRITICAL_START_WE <= q % 24 <= cfg.CRITICAL_END_WE:
-                extra_train.append(l)
-                extra_labels.append(label)
+def extend(cfg, input_data, labels):
+    extra_train = []
+    extra_labels = []
 
-    return input_data, targets, extra_train, extra_labels
+    for i in range(len(input_data)):
+
+        if labels[i] > 40000:
+            for k in range(1):
+                extra_train.append(input_data[i])
+                extra_labels.append(labels[i])
+
+    return extra_train, extra_labels
 
 
 def evaluate(model, eval_input, eval_labels, graph_cut=1, show_graph=True):
@@ -107,7 +108,7 @@ def evaluate(model, eval_input, eval_labels, graph_cut=1, show_graph=True):
         p_1 = model.predict(predict)
 
         res = p_1[0][0]
-        label = eval_labels[i][0]
+        label = eval_labels[i]
 
         predictions.append(res)
         labels.append(label)
@@ -142,7 +143,7 @@ def evaluate_freq(model, eval_input, eval_labels):
         p_1 = model.predict(predict)
 
         res = p_1[0][0]
-        label = eval_labels[i][0]
+        label = eval_labels[i]
 
         error = (res - label) / label * 100
         errors.append(error)
@@ -243,15 +244,17 @@ def construct_training_data(cfg, data):
 
     values = get_consumptions(sliced_data)
 
-    input_data, labels, extra_train, extra_labels = transform_data_for_nn(cfg, values)
+    input_data, labels = transform_data_for_nn(cfg, values)
 
     validation_cut = int(len(input_data) * cfg.TRAINING_CUT)
 
     train_input = input_data[0:validation_cut]
-    train_input.extend(extra_train)
-
     train_labels = labels[0:validation_cut]
-    train_labels.extend(extra_labels)
+
+    # extra_train, extra_labels = extend(cfg, train_input, train_labels)
+
+    # train_input.extend(extra_train)
+    # train_labels.extend(extra_labels)
 
     eval_input = input_data[validation_cut:]
     eval_labels = labels[validation_cut:]
