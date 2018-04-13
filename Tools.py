@@ -57,8 +57,6 @@ def get_consumptions(data):
 def transform_data_for_nn(cfg, data):
     input_data = []
     targets = []
-    extra_train = []
-    extra_labels = []
 
     for q in range(cfg.DAYS * 24, len(data) - (24 * cfg.DAYS + cfg.HOURS_FUTURE)):
         l = []
@@ -73,18 +71,7 @@ def transform_data_for_nn(cfg, data):
         input_data.append(l)
         targets.append(label)
 
-        if cfg.CRITICAL_START <= q % 24 <= cfg.CRITICAL_END:
-            extra_train.append(l)
-            extra_labels.append(label)
-
-        day = q // 24
-
-        if day % 7 == 0 or day % 7 == 5 or day % 7 == 6:
-            if cfg.CRITICAL_START_WE <= q % 24 <= cfg.CRITICAL_END_WE:
-                extra_train.append(l)
-                extra_labels.append(label)
-
-    return input_data, targets, extra_train, extra_labels
+    return input_data, targets
 
 
 def make_correlation_matrix():
@@ -250,15 +237,13 @@ def construct_training_data(cfg, data):
 
     values = get_consumptions(sliced_data)
 
-    input_data, labels, extra_train, extra_labels = transform_data_for_nn(cfg, values)
+    input_data, labels = transform_data_for_nn(cfg, values)
 
     validation_cut = int(len(input_data) * cfg.TRAINING_CUT)
 
     train_input = input_data[0:validation_cut]
-    train_input.extend(extra_train)
 
     train_labels = labels[0:validation_cut]
-    train_labels.extend(extra_labels)
 
     eval_input = input_data[validation_cut:]
     eval_labels = labels[validation_cut:]
