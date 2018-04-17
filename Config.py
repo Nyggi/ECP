@@ -5,7 +5,7 @@ from keras.optimizers import *
 
 class BaseConfig:
     def __init__(self):
-        self.EPOCHS = 500
+        self.EPOCHS = 70
         self.BATCH_SIZE = 128
 
         self.DAYS = 7
