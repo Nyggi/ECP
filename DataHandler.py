@@ -37,30 +37,59 @@ class DataHandler:
         return data
 
     def _transform_data_for_nn(self, data):
-        input_data = []
-        targets = []
+        X = []
+        y = []
 
-        for q in range(self.cfg.DAYS * 24, len(data) - (24 * self.cfg.DAYS + self.cfg.HOURS_FUTURE)):
+        past_hours_padding = self.cfg.HOURS_PAST + self.cfg.HOURS_FUTURE + 24
+        past_days_padding = self.cfg.DAYS * 24 + self.cfg.HOURS_FUTURE + 24
+
+        if past_days_padding > past_hours_padding:
+            padding = past_days_padding
+        else:
+            padding = past_hours_padding
+
+        for label in range(padding, len(data) - self.cfg.HOURS_FUTURE - 24):
+            features = []
+
+            # Same hour in past days
+            if self.cfg.FEATURES[0]:
+                for d in range(self.cfg.DAYS):
+                    features.append(data[label - d * 24].consumption)
+
+            # Past hours
+            if self.cfg.FEATURES[1]:
+                for h in range(self.cfg.HOURS_PAST):
+                    features.append(data[label - h].consumption)
+
+            # Binary encoding of hour of day
+            if self.cfg.FEATURES[2]:
+                hour = data[label].timestamp.hour
+                hour_bin = f'{hour:05b}'
+                for b in hour_bin:
+                    features.append(int(b))
+
+            # Binary encoding of day of the week
+            if self.cfg.FEATURES[3]:
+                weekday = data[label].timestamp.weekday()
+                weekday_bin = f'{weekday:03b}'
+                for b in weekday_bin:
+                    features.append(int(b))
+
+            X.append(features)
+
             l = []
 
-            c = 0
-            for i in range(q, q + 24 * self.cfg.DAYS):
-                l.append(data[i])
-                c += 1
+            for hour in range(24):
+                l.append(data[label + hour].consumption)
 
-            label = data[q + 24 * self.cfg.DAYS + self.cfg.HOURS_FUTURE]
+            y.append(l)
 
-            input_data.append(l)
-            targets.append(label)
-
-        return input_data, targets
+        return X, y
 
     def _construct_training_data(self, data):
         sliced_data = data[:int(len(data) * self.cfg.DATA_SLICE)]
 
-        values = self._get_consumptions(sliced_data)
-
-        input_data, labels = self._transform_data_for_nn(values)
+        input_data, labels = self._transform_data_for_nn(sliced_data)
 
         validation_cut = int(len(input_data) * self.cfg.TRAINING_CUT)
 
