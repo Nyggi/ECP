@@ -46,9 +46,6 @@ class ModelBuilder:
         model.add(Dense(128, use_bias=self.bias, input_shape=self.input_shape))
         model.add(Activation(self.activation_function))
 
-        model.add(Dense(128, use_bias=self.bias))
-        model.add(Activation(self.activation_function))
-
         model.add(Dense(1, use_bias=self.bias))
 
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape"])

@@ -1,38 +1,34 @@
 from ModelBuilder import ModelBuilder
 from Tools import *
 from Config import *
-
-AGGREGATION_LEVEL = 'hourly'
-# lighting, fridge, households, electronics, inductive
-GROUP = "households"
+from Evaluator import Evaluator
+from DataHandler import DataHandler
 
 cfg = SingleConfig()
 
 INPUT_SHAPE = (cfg.DAYS * 24,)
 
-data = fetch_data(AGGREGATION_LEVEL, GROUP, 0)
-
-train_input, train_labels, eval_input, eval_labels = construct_training_data(cfg, data)
+dh = DataHandler(cfg, 5)
 
 mb = ModelBuilder(cfg, INPUT_SHAPE)
 
 model = mb.nn()
 
 print("Fitting model")
-fitted_model = fit_model(cfg, model, train_input, train_labels)
+fitted_model = fit_model(cfg, model, dh.train_input, dh.train_labels)
 
 print("------------------Evaluation-------------------")
-evaluation = fitted_model.evaluate(np.array(eval_input), np.array(eval_labels), cfg.BATCH_SIZE, verbose=0)
+evaluation = fitted_model.evaluate(np.array(dh.eval_input), np.array(dh.eval_labels), cfg.BATCH_SIZE, verbose=0)
 
 for thing in evaluation:
     print(thing)
 
-evaluate(fitted_model, eval_input, eval_labels, cfg.GRAPH_CUT)
+evaluator = Evaluator(model, dh.eval_input, dh.eval_labels)
 
-evaluate_freq(fitted_model, eval_input, eval_labels)
+evaluator.evaluate()
 
-# evaluate_other(cfg, fitted_model, AGGREGATION_LEVEL, GROUP, 1)
+evaluator.evaluate_freq()
 
-weight_mmma(fitted_model)
+evaluator.weight_mmma()
 
 
