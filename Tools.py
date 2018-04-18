@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.losses import mean_squared_error
 import pandas
+from sklearn.feature_selection import RFE
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LogisticRegression
 
 HourData = namedtuple('HourData', ['timestamp', 'consumption'])
 
@@ -22,7 +25,7 @@ def fetch_data(AMOUNTOFHOUSES):
 
     # Counts how many households we are working with
     query = "SELECT COUNT(DISTINCT(house_id)) " \
-            "FROM households_energy_consumption.hourly_multiple_households_energy_consumption " \
+            "FROM households_energy_consumption.hourly_households_energy_consumption " \
             "WHERE house_id < " + str(AMOUNTOFHOUSES) + ";"
 
     cursor.execute(query)
@@ -31,7 +34,7 @@ def fetch_data(AMOUNTOFHOUSES):
 
     #99 er 10år,
     query = "SELECT timestamp, SUM(consumption) as consumption " \
-            "FROM households_energy_consumption.hourly_multiple_households_energy_consumption " \
+            "FROM households_energy_consumption.hourly_households_energy_consumption " \
             "WHERE house_id < " + str(AMOUNTOFHOUSES) + " GROUP BY timestamp ORDER BY timestamp;"
 
     cursor.execute(query)
@@ -74,11 +77,11 @@ def transform_data_for_nn(cfg, data):
     return input_data, targets
 
 
-def make_correlation_matrix():
+def make_correlation_matrix(amount_of_inputs):
     path = "PandasData.csv"
     names = []
 
-    for thing in range(168):
+    for thing in range(amount_of_inputs):
         names.append(str(thing))
     names.append("output")
 
@@ -89,7 +92,7 @@ def make_correlation_matrix():
     ax = fig.add_subplot(111)
     cax = ax.matshow(correlations, vmin=-1, vmax=1)
     fig.colorbar(cax)
-    ticks = np.arange(0, 169, 1)
+    ticks = np.arange(0, amount_of_inputs + 1, 1)
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
     ax.set_xticklabels(names)
@@ -97,7 +100,31 @@ def make_correlation_matrix():
     plt.show()
 
 
-def prepare_data_for_correlation(input, output):
+def recursive_feature_elimination(amount_of_inputs):
+    path = "PandasData.csv"
+
+    dataframe = pandas.read_csv(path)
+    array = dataframe.values
+    X = array[:, 0:-1]
+    y = array[:, -1]
+    # perform feature selection
+    rfe = RFE(RandomForestRegressor(n_estimators=500, random_state=1), 4)
+    fit = rfe.fit(X, y)
+    # report selected features
+    print('Selected Features:')
+    names = dataframe.columns.values[0:-1]
+    for i in range(len(fit.support_)):
+        if fit.support_[i]:
+            print(names[i])
+    # plot feature rank
+    names = dataframe.columns.values[0:-1]
+    ticks = [i for i in range(len(names))]
+    plt.bar(ticks, fit.ranking_)
+    plt.xticks(ticks, names)
+    plt.show()
+
+
+def prepare_data_for_pandas(input, output):
     f = open("PandasData.csv", "a+")
 
     for thing in input:
@@ -137,7 +164,7 @@ def evaluate(model, eval_input, eval_labels, graph_cut=1, show_graph=True):
         total_error_percent += error / float(label) * 100
         total_error += error
 
-        prepare_data_for_correlation(inputD, res)
+        prepare_data_for_pandas(inputD, res)
 
         i += 1
 

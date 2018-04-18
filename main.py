@@ -29,7 +29,8 @@ for thing in evaluation:
 
 evaluate(fitted_model, eval_input, eval_labels, cfg.GRAPH_CUT)
 
-make_correlation_matrix()
+# make_correlation_matrix(cfg.DAYS * 24)
+recursive_feature_elimination(cfg.DAYS * 24)
 
 # evaluate_freq(best_model, eval_input, eval_labels)
 

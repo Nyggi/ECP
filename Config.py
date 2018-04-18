@@ -5,13 +5,13 @@ from keras.optimizers import *
 
 class BaseConfig:
     def __init__(self):
-        self.EPOCHS = 500
+        self.EPOCHS = 5
         self.BATCH_SIZE = 128
 
-        self.DAYS = 7
+        self.DAYS = 30
         self.HOURS_FUTURE = 24
 
-        self.AMOUNTOFHOUSES = 20
+        self.AMOUNTOFHOUSES = 1
 
         self.CRITICAL_START = 16
         self.CRITICAL_END = 23
