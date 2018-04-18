@@ -5,17 +5,13 @@ from keras.optimizers import *
 
 class BaseConfig:
     def __init__(self):
-        self.EPOCHS = 50
+        self.EPOCHS = 70
         self.BATCH_SIZE = 128
 
+        self.HOURS_PAST = 24
+        self.HOURS_FUTURE = 12
+
         self.DAYS = 7
-        self.HOURS_FUTURE = 24
-
-        self.CRITICAL_START = 16
-        self.CRITICAL_END = 23
-
-        self.CRITICAL_START_WE = 10
-        self.CRITICAL_END_WE = 23
 
         self.BIAS = False
         self.ACTIVATION_FUNCTION = 'relu'
@@ -23,8 +19,15 @@ class BaseConfig:
         self.OPTIMIZER = Adamax()
 
         self.TRAINING_CUT = 0.7
-        self.DATA_SLICE = 0.1
+        self.DATA_SLICE = 1
         self.GRAPH_CUT = 1
+
+        # Features
+        # Same hour past days
+        # X hours past
+        # Time of day
+        # Day of week
+        self.FEATURES = [1, 1, 1, 1]
 
     def dump(self):
         result = {}
