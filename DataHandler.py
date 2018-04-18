@@ -41,7 +41,7 @@ class DataHandler:
         y = []
 
         past_hours_padding = self.cfg.HOURS_PAST + self.cfg.HOURS_FUTURE + 24
-        past_days_padding = self.cfg.DAYS * 24 + self.cfg.HOURS_FUTURE + 24
+        past_days_padding = self.cfg.WEEKS * 24 * 7 + self.cfg.HOURS_FUTURE + 24
 
         if past_days_padding > past_hours_padding:
             padding = past_days_padding
@@ -51,25 +51,19 @@ class DataHandler:
         for label in range(padding, len(data) - self.cfg.HOURS_FUTURE - 24):
             features = []
 
-            # Same hour in past days
+            # Same hours in same day in past weeks
             if self.cfg.FEATURES[0]:
-                for d in range(self.cfg.DAYS):
-                    features.append(data[label - d * 24].consumption)
+                for w in range(1, self.cfg.WEEKS + 1):
+                    for h in range(label - w * 7 * 24, label - w * 7 * 24 + 24):
+                        features.append(data[h].consumption)
 
             # Past hours
             if self.cfg.FEATURES[1]:
                 for h in range(self.cfg.HOURS_PAST):
                     features.append(data[label - h].consumption)
 
-            # Binary encoding of hour of day
-            if self.cfg.FEATURES[2]:
-                hour = data[label].timestamp.hour
-                hour_bin = f'{hour:05b}'
-                for b in hour_bin:
-                    features.append(int(b))
-
             # Binary encoding of day of the week
-            if self.cfg.FEATURES[3]:
+            if self.cfg.FEATURES[2]:
                 weekday = data[label].timestamp.weekday()
                 weekday_bin = f'{weekday:03b}'
                 for b in weekday_bin:

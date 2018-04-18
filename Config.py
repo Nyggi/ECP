@@ -11,7 +11,7 @@ class BaseConfig:
         self.HOURS_PAST = 24
         self.HOURS_FUTURE = 12
 
-        self.DAYS = 7
+        self.WEEKS = 7
 
         self.BIAS = False
         self.ACTIVATION_FUNCTION = 'relu'
@@ -23,11 +23,10 @@ class BaseConfig:
         self.GRAPH_CUT = 1
 
         # Features
-        # Same hour past days
+        # Same hours in past days past weeks
         # X hours past
-        # Time of day
         # Day of week
-        self.FEATURES = [1, 1, 1, 1]
+        self.FEATURES = [1, 1, 1]
 
     def dump(self):
         result = {}
