@@ -3,6 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#PandasCSV
+PandasData.csv
+
+#PyCharm
+.idea
+
+#Network Weight Stats
+weights_mmma.json
+
 # C extensions
 *.so
 
