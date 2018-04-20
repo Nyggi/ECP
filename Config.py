@@ -14,9 +14,10 @@ class BaseConfig:
         self.WEEKS = 7
 
         self.BIAS = False
-        self.ACTIVATION_FUNCTION = 'relu'
+        self.ACTIVATION_FUNCTION = 'tanh'
         self.LOSS = mean_squared_error
         self.OPTIMIZER = Adamax()
+        self.SCALE_VALUES = True
 
         self.TRAINING_CUT = 0.7
         self.DATA_SLICE = 1

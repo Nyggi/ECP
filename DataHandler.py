@@ -1,5 +1,7 @@
 import mysql.connector
 from collections import namedtuple
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 
 HourData = namedtuple('HourData', ['house_id', 'timestamp', 'consumption'])
 
@@ -11,7 +13,14 @@ class DataHandler:
         self.house_id = house_id
         self.data = self._fetch_data(house_id)
 
-        train_input, train_labels, eval_input, eval_labels = self._construct_training_data(self.data)
+        self.scaler = MinMaxScaler(feature_range=(0, 1))
+
+        if cfg.SCALE_VALUES is True:
+            scaled_data = self._get_scaled_data()
+            train_input, train_labels, eval_input, eval_labels = self._construct_training_data(scaled_data)
+        else:
+            self.scaler = None
+            train_input, train_labels, eval_input, eval_labels = self._construct_training_data(self.data)
 
         self.train_input = train_input
         self.train_labels = train_labels
@@ -102,3 +111,19 @@ class DataHandler:
             consumptions.append(d.consumption)
 
         return consumptions
+
+    def _get_scaled_data(self):
+        consumption_list = list()
+
+        for i in self.data:
+            consumption_list.append([i.consumption])
+
+        consumption_list = np.asarray(consumption_list)
+        scaled_consumption = self.scaler.fit_transform(consumption_list)
+
+        scaled_data = list()
+
+        for j in range(len(self.data)):
+            scaled_data.append(HourData(self.data[j].house_id, self.data[j].timestamp, scaled_consumption[j][0]))
+
+        return scaled_data
