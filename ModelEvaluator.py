@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-class Evaluator:
+class ModelEvaluator:
 
     def __init__(self, model, eval_input, eval_labels):
         self.model = model
