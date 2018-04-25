@@ -4,7 +4,7 @@ import numpy as np
 import mysql.connector
 from collections import namedtuple
 
-COMPARE_SIZE = 336
+COMPARE_SIZE = 168
 
 HourData = namedtuple('HourData', ['house_id', 'timestamp', 'consumption'])
 open("PandasData.csv", 'w').close()
@@ -105,6 +105,32 @@ def make_correlation_matrix(consumption_data):
     ax.set_yticklabels(names)
     plt.show()
 
+def make_simple_correlation_matrix(consumption_data):
+    path = "PandasData.csv"
+    names = []
+
+    for hour in range(COMPARE_SIZE):
+        names.append(str(hour))
+
+    data = pandas.read_csv(path, names=names)
+    correlations = data.corr()
+    values = correlations.get_values()
+
+    plotData = []
+
+    for i in range(1, COMPARE_SIZE):
+        average = 0
+        for j in range(COMPARE_SIZE - i):
+            average += values[j][i + j]
+        average /= COMPARE_SIZE - i
+        plotData.append(average)
+
+    plt.plot(range(1, COMPARE_SIZE), plotData, label="Correlation", color="blue")
+    plt.xticks(np.arange(0, COMPARE_SIZE, 24))
+    plt.xlabel("Hour")
+    plt.ylabel("Average correlation")
+    #plt.minorticks_on()
+    plt.show()
 
 def prepare_data_for_pandas(consumption_data):
     f = open("PandasData.csv", "a+")
@@ -126,6 +152,7 @@ def prepare_data_for_pandas(consumption_data):
 
 
 data = fetch_data_hourly()
-# data = fetch_data_daily()
+#data = fetch_data_daily()
 prepare_data_for_pandas(data)
-make_correlation_matrix(data)
+#make_correlation_matrix(data)
+make_simple_correlation_matrix(data)
