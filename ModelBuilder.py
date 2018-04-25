@@ -36,7 +36,7 @@ class ModelBuilder:
 
         model.add(Dense(24, use_bias=self.bias))
 
-        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape"])
+        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape", "mae"])
 
         return model
 
@@ -46,7 +46,7 @@ class ModelBuilder:
         model.add(Dense(24, use_bias=self.bias, input_shape=self.input_shape))
         model.add(Activation(self.activation_function))
 
-        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape"])
+        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape", "mae"])
 
         return model
 
@@ -67,7 +67,7 @@ class ModelBuilder:
 
         model.add(Dense(1, use_bias=self.bias))
 
-        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape"])
+        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape", "mae"])
 
         return model
 
@@ -76,6 +76,6 @@ class ModelBuilder:
 
         model.add(Dense(1, use_bias=self.bias, input_shape=self.input_shape))
 
-        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape"])
+        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape", "mae"])
 
         return model

@@ -1,7 +1,7 @@
 from ModelBuilder import ModelBuilder
 from Tools import *
 from Config import *
-from Evaluator import Evaluator
+from ModelEvaluator import ModelEvaluator
 from DataHandler import DataHandler
 
 cfg = SingleConfig()
@@ -18,17 +18,14 @@ print("Fitting model")
 fitted_model = fit_model(cfg, model, dh.train_input, dh.train_labels)
 
 print("------------------Evaluation-------------------")
-evaluation = fitted_model.evaluate(np.array(dh.eval_input), np.array(dh.eval_labels), cfg.BATCH_SIZE, verbose=0)
+evaluator = ModelEvaluator(fitted_model, dh.eval_input, dh.eval_labels)
 
-for thing in evaluation:
-    print(thing)
+evaluator.evaluate(dh.scaler)
 
-# evaluator = Evaluator(fitted_model, dh.eval_input, dh.eval_labels)
+evaluator.evaluate_freq(dh.scaler)
 
-# evaluator.evaluate()
+evaluator.weight_mmma()
 
-# evaluator.evaluate_freq()
+evaluator.weight_mmma_plot()
 
-# evaluator.weight_mmma()
-
-
+plt.show()
