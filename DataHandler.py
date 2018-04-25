@@ -6,7 +6,7 @@ HourData = namedtuple('HourData', ['house_id', 'timestamp', 'consumption'])
 
 class DataHandler:
 
-    def __init__(self, cfg,  house_id):
+    def __init__(self, cfg, house_id):
         self.cfg = cfg
         self.house_id = house_id
         self.data = self._fetch_data(house_id)
@@ -24,7 +24,7 @@ class DataHandler:
 
         cursor = connection.cursor()  # Queries can be made through this Cursor object
 
-        query = 'SELECT house_id, timestamp, consumption  FROM hourly_households_energy_consumption WHERE house_id = ' + str(house_id) +' ORDER BY timestamp;'
+        query = 'SELECT house_id, timestamp, consumption  FROM hourly_households_energy_consumption WHERE house_id = ' + str(house_id) + ' ORDER BY timestamp;'
 
         cursor.execute(query)
 
@@ -40,15 +40,20 @@ class DataHandler:
         X = []
         y = []
 
-        past_hours_padding = self.cfg.HOURS_PAST + self.cfg.HOURS_FUTURE + 24
-        past_days_padding = self.cfg.WEEKS * 24 * 7 + self.cfg.HOURS_FUTURE + 24
+        past_hours_padding = self.cfg.HOURS_PAST + self.cfg.HOURS_FUTURE
+        past_days_padding = self.cfg.WEEKS * 24 * 7 + self.cfg.HOURS_FUTURE
 
         if past_days_padding > past_hours_padding:
             padding = past_days_padding
         else:
             padding = past_hours_padding
 
-        for label in range(padding, len(data) - self.cfg.HOURS_FUTURE - 24):
+        if padding % 24 <= 12:
+            padding += 12 - padding % 24
+        else:
+            padding += 24 - padding % 24 + 12
+
+        for label in range(padding, len(data) - self.cfg.HOURS_FUTURE - 24, 24):
             features = []
 
             # Same hours in same day in past weeks
@@ -60,7 +65,7 @@ class DataHandler:
             # Past hours
             if self.cfg.FEATURES[1]:
                 for h in range(self.cfg.HOURS_PAST):
-                    features.append(data[label - h].consumption)
+                    features.append(data[label - (self.cfg.HOURS_FUTURE + h)].consumption)
 
             # Binary encoding of day of the week
             if self.cfg.FEATURES[2]:
@@ -94,11 +99,3 @@ class DataHandler:
         eval_labels = labels[validation_cut:]
 
         return train_input, train_labels, eval_input, eval_labels
-
-    def _get_consumptions(self, data):
-        consumptions = []
-
-        for d in data:
-            consumptions.append(d.consumption)
-
-        return consumptions
