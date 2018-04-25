@@ -46,3 +46,4 @@ def fit_model(cfg, model, train_input, train_labels, show_error_graph=False):
         plt.show()
 
     return best_model
+

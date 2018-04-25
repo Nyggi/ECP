@@ -1,7 +1,7 @@
 from keras.models import Sequential
-from keras.layers import Activation, Dense, Dropout, Conv2D, Flatten, BatchNormalization, LeakyReLU, Input
+from keras.layers import Activation, Dense, Dropout, Conv2D, Flatten, BatchNormalization, LeakyReLU, InputLayer
+from keras.activations import linear
 from keras.optimizers import Adam, RMSprop, sgd, Nadam, Adamax
-from random import randrange, random
 
 
 class ModelBuilder:
@@ -12,6 +12,7 @@ class ModelBuilder:
         self.bias = cfg.BIAS
         self.loss = cfg.LOSS
         self.optimizer = cfg.OPTIMIZER
+        self.hidden_layers = cfg.HIDDEN_LAYERS
 
     def nn(self):
         model = Sequential()
@@ -50,31 +51,15 @@ class ModelBuilder:
 
         return model
 
-    def nn_gen(self):
+    def nn_w(self):
         model = Sequential()
 
-        layers = randrange(3, 20)
+        model.add(InputLayer(input_shape=self.input_shape))
 
-        rn = randrange(100, 5000, 10)
+        for layer in self.hidden_layers:
+            model.add(Dense(layer, use_bias=self.bias, activation=self.activation_function))
 
-        model.add(Dense(rn, use_bias=self.bias, input_shape=self.input_shape))
-
-        for i in range(layers, 1):
-            if random.random() < 0.7:
-                nodes = randrange(10 * i, 200 * i)
-                model.add(Dense(nodes, use_bias=self.bias))
-                model.add(Activation(self.activation_function))
-
-        model.add(Dense(1, use_bias=self.bias))
-
-        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape", "mae"])
-
-        return model
-
-    def nn_lin(self):
-        model = Sequential()
-
-        model.add(Dense(1, use_bias=self.bias, input_shape=self.input_shape))
+        model.add(Dense(24, use_bias=self.bias, activation=linear))
 
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape", "mae"])
 

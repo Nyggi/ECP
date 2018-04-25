@@ -15,10 +15,10 @@ mb = ModelBuilder(cfg, INPUT_SHAPE)
 model = mb.nn_small()
 
 print("Fitting model")
-fitted_model = fit_model(cfg, model, dh.train_input, dh.train_labels)
+model.fit(np.array(dh.train_input), np.array(dh.train_labels), epochs=cfg.EPOCHS, batch_size=cfg.BATCH_SIZE, verbose=2)
 
 print("------------------Evaluation-------------------")
-evaluator = ModelEvaluator(fitted_model, dh.eval_input, dh.eval_labels)
+evaluator = ModelEvaluator(model, dh.eval_input, dh.eval_labels)
 
 evaluator.evaluate(dh.scaler)
 

@@ -5,19 +5,22 @@ from keras.optimizers import *
 
 class BaseConfig:
     def __init__(self):
-        self.EPOCHS = 70
+        self.EPOCHS = 2000
         self.BATCH_SIZE = 128
+
+        self.HOUSE_ID = 5
 
         self.HOURS_PAST = 24
         self.HOURS_FUTURE = 12
-
         self.WEEKS = 7
 
-        self.BIAS = False
-        self.ACTIVATION_FUNCTION = 'tanh'
+        self.HIDDEN_LAYERS = []
+
+        self.BIAS = True
+        self.ACTIVATION_FUNCTION = 'relu'
         self.LOSS = mean_squared_error
         self.OPTIMIZER = Adamax()
-        self.SCALE_VALUES = True
+        self.SCALE_VALUES = False
 
         self.TRAINING_CUT = 0.7
         self.DATA_SLICE = 1
@@ -27,7 +30,7 @@ class BaseConfig:
         # Same hours in past days past weeks
         # X hours past
         # Day of week
-        self.FEATURES = [1, 1, 1]
+        self.FEATURES = [1, 1, 0]
 
     def dump(self):
         result = {}
