@@ -59,7 +59,7 @@ class ModelBuilder:
         for layer in self.hidden_layers:
             model.add(Dense(layer, use_bias=self.bias, activation=self.activation_function))
 
-        model.add(Dense(24, use_bias=self.bias, activation=linear))
+        model.add(Dense(1, use_bias=self.bias, activation=linear))
 
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape", "mae"])
 

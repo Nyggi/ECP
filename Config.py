@@ -5,16 +5,18 @@ from keras.optimizers import *
 
 class BaseConfig:
     def __init__(self):
-        self.EPOCHS = 2000
+        self.EPOCHS = 500
         self.BATCH_SIZE = 128
 
         self.HOUSE_ID = 5
 
-        self.HOURS_PAST = 24
-        self.HOURS_FUTURE = 12
-        self.WEEKS = 7
+        # 0 - 23
+        self.HOUR_TO_PREDICT = 17
 
-        self.HIDDEN_LAYERS = []
+        self.HOURS_PAST = 24
+        self.WEEKS = 2
+
+        self.HIDDEN_LAYERS = [100]
 
         self.BIAS = True
         self.ACTIVATION_FUNCTION = 'relu'

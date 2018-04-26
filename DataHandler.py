@@ -45,36 +45,36 @@ class DataHandler:
 
         return data
 
-    def _transform_data_for_nn(self, data):
+    def _extract_features(self, data):
         X = []
         y = []
 
-        past_hours_padding = self.cfg.HOURS_PAST + self.cfg.HOURS_FUTURE
-        past_days_padding = self.cfg.WEEKS * 24 * 7 + self.cfg.HOURS_FUTURE
+        past_hours_padding = self.cfg.HOURS_PAST + 12 + self.cfg.HOUR_TO_PREDICT
+        past_days_padding = self.cfg.WEEKS * 24 * 7
 
         if past_days_padding > past_hours_padding:
             padding = past_days_padding
         else:
             padding = past_hours_padding
 
-        if padding % 24 <= 12:
-            padding += 12 - padding % 24
-        else:
-            padding += 24 - padding % 24 + 12
+        padding += padding % 24
 
-        for label in range(padding, len(data) - self.cfg.HOURS_FUTURE - 24, 24):
+        for label in range(padding + self.cfg.HOUR_TO_PREDICT, len(data), 24):
             features = []
 
-            # Same hours in same day in past weeks
+            print(data[label].timestamp)
+
+            # Same hour in same day in past weeks
             if self.cfg.FEATURES[0]:
                 for w in range(1, self.cfg.WEEKS + 1):
-                    for h in range(label - w * 7 * 24, label - w * 7 * 24 + 24):
-                        features.append(data[h].consumption)
+                    hour = label - (w * 7 * 24)
+                    features.append(data[hour].consumption)
 
             # Past hours
             if self.cfg.FEATURES[1]:
                 for h in range(self.cfg.HOURS_PAST):
-                    features.append(data[label - (self.cfg.HOURS_FUTURE + h)].consumption)
+                    hour = label - (12 + h + self.cfg.HOUR_TO_PREDICT)
+                    features.append(data[hour].consumption)
 
             # Binary encoding of day of the week
             if self.cfg.FEATURES[2]:
@@ -84,20 +84,14 @@ class DataHandler:
                     features.append(int(b))
 
             X.append(features)
-
-            l = []
-
-            for hour in range(24):
-                l.append(data[label + hour].consumption)
-
-            y.append(l)
+            y.append(data[label].consumption)
 
         return X, y
 
     def _construct_training_data(self, data):
         sliced_data = data[:int(len(data) * self.cfg.DATA_SLICE)]
 
-        input_data, labels = self._transform_data_for_nn(sliced_data)
+        input_data, labels = self._extract_features(sliced_data)
 
         validation_cut = int(len(input_data) * self.cfg.TRAINING_CUT)
 

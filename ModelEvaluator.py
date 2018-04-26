@@ -36,37 +36,39 @@ class ModelEvaluator:
         weights = self.model.get_weights()
 
         for layer in weights:
-            weight_min = []
-            weight_max = []
-            median = []
-            average = []
 
-            for node in layer:
-                weight_min.append(min(node))
-                weight_max.append(max(node))
-                median.append(sorted(node)[len(node) // 2])
-                average.append(sum(node) / len(node))
+            if isinstance(layer[0], np.ndarray):
+                weight_min = []
+                weight_max = []
+                median = []
+                average = []
 
-            line_min, = plt.plot(weight_min, label='Minimum', color='blue')
-            line_max, = plt.plot(weight_max, label='Maximum', color='orange')
-            line_median, = plt.plot(median, label='Median', color='green')
-            line_average, = plt.plot(average, label='Average', color='red')
-            plt.legend(handles=[line_min, line_max, line_median, line_average])
+                for node in layer:
+                    weight_min.append(min(node))
+                    weight_max.append(max(node))
+                    median.append(sorted(node)[len(node) // 2])
+                    average.append(sum(node) / len(node))
 
-            x = np.arange(len(layer))
-            z = np.polyfit(x, weight_min, 1)
-            p = np.poly1d(z)
-            plt.plot(x, p(x), linestyle='dashed', color='blue')
-            z = np.polyfit(x, weight_max, 1)
-            p = np.poly1d(z)
-            plt.plot(x, p(x), linestyle='dashed', color='orange')
-            z = np.polyfit(x, median, 1)
-            p = np.poly1d(z)
-            plt.plot(x, p(x), linestyle='dashed', color='green')
-            z = np.polyfit(x, average, 1)
-            p = np.poly1d(z)
-            plt.plot(x, p(x), linestyle='dashed', color='red')
-            plt.figure()
+                line_min, = plt.plot(weight_min, label='Minimum', color='blue')
+                line_max, = plt.plot(weight_max, label='Maximum', color='orange')
+                line_median, = plt.plot(median, label='Median', color='green')
+                line_average, = plt.plot(average, label='Average', color='red')
+                plt.legend(handles=[line_min, line_max, line_median, line_average])
+
+                x = np.arange(len(layer))
+                z = np.polyfit(x, weight_min, 1)
+                p = np.poly1d(z)
+                plt.plot(x, p(x), linestyle='dashed', color='blue')
+                z = np.polyfit(x, weight_max, 1)
+                p = np.poly1d(z)
+                plt.plot(x, p(x), linestyle='dashed', color='orange')
+                z = np.polyfit(x, median, 1)
+                p = np.poly1d(z)
+                plt.plot(x, p(x), linestyle='dashed', color='green')
+                z = np.polyfit(x, average, 1)
+                p = np.poly1d(z)
+                plt.plot(x, p(x), linestyle='dashed', color='red')
+                plt.figure()
 
     def plot_cumu_abs_error_freq(self, errors):
         abs_errors = [abs(x) for x in errors]
@@ -140,9 +142,8 @@ class ModelEvaluator:
         for inputD in self.eval_input:
             res, label = self._predict_and_shape(inputD, self.eval_labels[i], scaler)
 
-            graph_point = int(res.size / 2)
-            predictions.append(res[graph_point])
-            labels.append(label[graph_point])
+            predictions.append(res)
+            labels.append(label)
 
             error = abs(res - label)
 
