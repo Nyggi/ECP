@@ -57,12 +57,10 @@ class DataHandler:
         else:
             padding = past_hours_padding
 
-        padding += padding % 24
+        padding += 24 - padding % 24
 
         for label in range(padding + self.cfg.HOUR_TO_PREDICT, len(data), 24):
             features = []
-
-            print(data[label].timestamp)
 
             # Same hour in same day in past weeks
             if self.cfg.FEATURES[0]:
