@@ -15,6 +15,7 @@ class BaseConfig:
 
         self.HOURS_PAST = 24
         self.WEEKS = 2
+        self.DAYS = 5
 
         self.HIDDEN_LAYERS = [100]
 
