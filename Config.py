@@ -19,10 +19,11 @@ class BaseConfig:
         self.HIDDEN_LAYERS = [100]
 
         self.BIAS = True
-        self.ACTIVATION_FUNCTION = 'relu'
+        self.ACTIVATION_FUNCTION = 'tanh'
         self.LOSS = mean_squared_error
         self.OPTIMIZER = Adamax()
-        self.SCALE_VALUES = False
+        self.SCALE_VALUES = True
+        self.SCALE_RANGE = (-1, 1)
 
         self.TRAINING_CUT = 0.7
         self.DATA_SLICE = 1
@@ -32,7 +33,9 @@ class BaseConfig:
         # Same hours in past days past weeks
         # X hours past
         # Day of week
-        self.FEATURES = [1, 1, 0]
+        self.FEATURES = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        self.FEATURES_BINARY_ENCODED = True
+        self.PADDING = 0
 
     def dump(self):
         result = {}
