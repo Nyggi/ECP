@@ -5,7 +5,7 @@ from keras.optimizers import *
 
 class BaseConfig:
     def __init__(self):
-        self.EPOCHS = 500
+        self.EPOCHS = 200
         self.BATCH_SIZE = 128
 
         self.HOUSE_ID = 5
@@ -14,9 +14,9 @@ class BaseConfig:
         self.HOUR_TO_PREDICT = 17
 
         self.HOURS_PAST = 24
-        self.WEEKS = 2
+        self.WEEKS = 5
 
-        self.HIDDEN_LAYERS = [100]
+        self.HIDDEN_LAYERS = [55]
 
         self.BIAS = True
         self.ACTIVATION_FUNCTION = 'relu'
@@ -28,11 +28,12 @@ class BaseConfig:
         self.DATA_SLICE = 1
         self.GRAPH_CUT = 1
 
-        # Features
+        # -- Features --
         # Same hours in past days past weeks
         # X hours past
         # Day of week
-        self.FEATURES = [1, 1, 0]
+        # Specific features from csv
+        self.FEATURES = [1, 0, 0, 0]
 
     def dump(self):
         result = {}

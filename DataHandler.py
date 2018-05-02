@@ -2,16 +2,16 @@ import mysql.connector
 from collections import namedtuple
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
+from numpy import genfromtxt
 
 HourData = namedtuple('HourData', ['house_id', 'timestamp', 'consumption'])
 
 
 class DataHandler:
 
-    def __init__(self, cfg, house_id):
+    def __init__(self, cfg):
         self.cfg = cfg
-        self.house_id = house_id
-        self.data = self._fetch_data(house_id)
+        self.data = self._fetch_data(cfg.HOUSE_ID)
 
         self.scaler = MinMaxScaler(feature_range=(0, 1))
 
@@ -52,6 +52,9 @@ class DataHandler:
         past_hours_padding = self.cfg.HOURS_PAST + 12 + self.cfg.HOUR_TO_PREDICT
         past_days_padding = self.cfg.WEEKS * 24 * 7
 
+        csv_features = genfromtxt('BestFeatures.csv', delimiter=',')
+        unique_features = np.unique(csv_features)
+
         if past_days_padding > past_hours_padding:
             padding = past_days_padding
         else:
@@ -80,6 +83,15 @@ class DataHandler:
                 weekday_bin = f'{weekday:03b}'
                 for b in weekday_bin:
                     features.append(int(b))
+
+            # Specific features extracted from BestFeatures.csv
+            if self.cfg.FEATURES[3]:
+                for thing in unique_features:
+                    # Select if SELECT_SPECIFIC was False when using DataEvaluator
+                    #features.append(data[label - 12 - self.cfg.HOUR_TO_PREDICT - int(thing)].consumption)
+
+                    # Select if SELECT_SPECIFIC was True when using DataEvaluator
+                    features.append(data[label - int(thing)].consumption)
 
             X.append(features)
             y.append(data[label].consumption)

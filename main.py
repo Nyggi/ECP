@@ -6,7 +6,7 @@ from DataHandler import DataHandler
 
 cfg = SingleConfig()
 
-dh = DataHandler(cfg, 5)
+dh = DataHandler(cfg)
 
 INPUT_SHAPE = (len(dh.train_input[0]),)
 
@@ -25,7 +25,7 @@ for thing in evaluation:
 
 evaluator = ModelEvaluator(model, dh.eval_input, dh.eval_labels)
 
-evaluator.evaluate(dh.scaler)
+#evaluator.evaluate(dh.scaler)
 
 #evaluator.evaluate_freq(dh.scaler)
 

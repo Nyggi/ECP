@@ -35,7 +35,7 @@ class ModelBuilder:
         model.add(Dense(8, use_bias=self.bias))
         model.add(Activation(self.activation_function))
 
-        model.add(Dense(24, use_bias=self.bias))
+        model.add(Dense(1, use_bias=self.bias))
 
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=["mape", "mae"])
 
@@ -57,7 +57,8 @@ class ModelBuilder:
         model.add(InputLayer(input_shape=self.input_shape))
 
         for layer in self.hidden_layers:
-            model.add(Dense(layer, use_bias=self.bias, activation=self.activation_function))
+            if layer != 0:
+                model.add(Dense(layer, use_bias=self.bias, activation=self.activation_function))
 
         model.add(Dense(1, use_bias=self.bias, activation=linear))
 
