@@ -2,6 +2,8 @@ import mysql.connector
 from collections import namedtuple
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
+from random import shuffle
+
 
 HourData = namedtuple('HourData', ['house_id', 'timestamp', 'consumption'])
 
@@ -199,13 +201,27 @@ class DataHandler:
 
         input_data, labels = self._extract_features(sliced_data)
 
+        shuffled_data = []
+
+        for i in range(len(input_data)):
+            shuffled_data.append([input_data[i], labels[i]])
+
+        shuffle(shuffled_data)
+
+        input_data_shuffled = []
+        labels_shuffled = []
+
+        for i in range(len(input_data)):
+            input_data_shuffled.append(shuffled_data[i][0])
+            labels_shuffled.append(shuffled_data[i][1])
+
         validation_cut = int(len(input_data) * self.cfg.TRAINING_CUT)
 
-        train_input = input_data[0:validation_cut]
-        train_labels = labels[0:validation_cut]
+        train_input = input_data_shuffled[0:validation_cut]
+        train_labels = labels_shuffled[0:validation_cut]
 
-        eval_input = input_data[validation_cut:]
-        eval_labels = labels[validation_cut:]
+        eval_input = input_data_shuffled[validation_cut:]
+        eval_labels = labels_shuffled[validation_cut:]
 
         return train_input, train_labels, eval_input, eval_labels
 
