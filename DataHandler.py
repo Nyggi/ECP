@@ -8,10 +8,10 @@ HourData = namedtuple('HourData', ['house_id', 'timestamp', 'consumption'])
 
 class DataHandler:
 
-    def __init__(self, cfg, house_id):
+    def __init__(self, cfg):
         self.cfg = cfg
-        self.house_id = house_id
-        self.data = self._fetch_data(house_id)
+        self.house_id = cfg.HOUSE_ID
+        self.data = self._fetch_data(self.house_id)
 
         self.scaler = MinMaxScaler(feature_range=cfg.SCALE_RANGE)
 
@@ -213,7 +213,7 @@ class DataHandler:
         consumption_list = list()
 
         for i in self.data:
-            consumption_list.append([i.consumption])
+            consumption_list.append([float(i.consumption)])
 
         consumption_list = np.asarray(consumption_list)
         scaled_consumption = self.scaler.fit_transform(consumption_list)
