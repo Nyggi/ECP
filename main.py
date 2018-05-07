@@ -6,7 +6,7 @@ from DataHandler import DataHandler
 
 cfg = SingleConfig()
 
-dh = DataHandler(cfg, 5)
+dh = DataHandler(cfg, cfg.HOUSE_ID)
 
 INPUT_SHAPE = (len(dh.train_input[0]),)
 
