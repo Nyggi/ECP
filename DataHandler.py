@@ -126,22 +126,8 @@ class DataHandler:
                     hour = label - (12 + h + self.cfg.HOUR_TO_PREDICT)
                     features.append(data[hour].consumption)
 
-            # Time of day
-            if self.cfg.FEATURES[7]:
-                hour = data[label].timestamp.hour
-                if self.cfg.FEATURES_BINARY_ENCODED:
-                    hour_bin = f'{hour:05b}'
-                    for b in hour_bin:
-                        features.append(int(b))
-                else:
-                    hour_rad = hour * (2. * np.pi / 24)
-                    hour_sin = np.sin(hour_rad)
-                    hour_cos = np.cos(hour_rad)
-                    features.append(hour_sin)
-                    features.append(hour_cos)
-
             # Day of the week
-            if self.cfg.FEATURES[8]:
+            if self.cfg.FEATURES[7]:
                 weekday = data[label].timestamp.weekday()
                 if self.cfg.FEATURES_BINARY_ENCODED:
                     weekday_bin = f'{weekday:03b}'
@@ -155,7 +141,7 @@ class DataHandler:
                     features.append(weekday_cos)
 
             # Month of year
-            if self.cfg.FEATURES[9]:
+            if self.cfg.FEATURES[8]:
                 month = data[label].timestamp.month
                 if self.cfg.FEATURES_BINARY_ENCODED:
                     month_bin = f'{month:04b}'
@@ -169,7 +155,7 @@ class DataHandler:
                     features.append(month_cos)
 
             # Season of year - 0 Winter ... 3 Autumn
-            if self.cfg.FEATURES[10]:
+            if self.cfg.FEATURES[9]:
                 month = data[label].timestamp.month
                 season = int((month + 1) / 3) % 4
                 if self.cfg.FEATURES_BINARY_ENCODED:
@@ -184,7 +170,7 @@ class DataHandler:
                     features.append(season_cos)
 
             # Holiday
-            if self.cfg.FEATURES[11]:
+            if self.cfg.FEATURES[10]:
                 weekday = data[label].timestamp.weekday()
                 if weekday == 5 or weekday == 6:
                     features.append(1)

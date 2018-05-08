@@ -1,10 +1,11 @@
 import numpy as np
+import sys
 from keras.models import clone_model
 import matplotlib.pyplot as plt
 
 
 def fit_model(cfg, model, train_input, train_labels, show_error_graph=False):
-    best_mape = 999999999
+    best_mape = sys.maxsize
 
     best_model = clone_model(model)
     best_model.compile(loss=cfg.LOSS, optimizer=cfg.OPTIMIZER, metrics=["mape", "mae"])
@@ -47,3 +48,13 @@ def fit_model(cfg, model, train_input, train_labels, show_error_graph=False):
 
     return best_model
 
+
+# A helper method for pretty-printing linear models
+def pretty_print_linear(coefs, names=None, sort=False):
+    if names == None:
+        names = ["X%s" % x for x in range(len(coefs))]
+    lst = zip(coefs, names)
+    if sort:
+        lst = sorted(lst, key=lambda x: -np.abs(x[0]))
+    return " + ".join("%s * %s" % (round(coef, 3), name)
+                      for coef, name in lst)

@@ -1,38 +1,54 @@
-import json
 import matplotlib.pyplot as plt
 import numpy as np
+import EvalMetrics
 
 
 class ModelEvaluator:
 
-    def __init__(self, model, eval_input, eval_labels):
+    def __init__(self, cfg, model, dh):
+        self.cfg = cfg
         self.model = model
-        self.eval_input = eval_input
-        self.eval_labels = eval_labels
+        self.dh = dh
 
-    def weight_mmma(self):
-        weights = self.model.get_weights()
+    def get_eval_data(self):
+        X_eval = np.array(self.dh.eval_input)
+        y_eval = np.array(self.dh.eval_labels)
 
-        layers = []
+        predictions = self.model.predict(X_eval)
 
-        for layer in weights:
-            nodes = []
-            for node in layer:
-                weight_min = min(node)
-                weight_max = max(node)
-                median = sorted(node)[len(node) // 2]
-                average = sum(node) / len(node)
+        if self.cfg.SCALE_VALUES:
+            predictions = self.dh.scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
+            y_eval = self.dh.scaler.inverse_transform(np.array(y_eval).reshape(-1, 1))
 
-                weight_string = f'MIN {weight_min:.4f}, MAX {weight_max:.4f}, Median {median:.4f}, AVG {average:.4f}'
-                nodes.append(weight_string)
+        return predictions, y_eval
 
-            layers.append(nodes)
+    def evaluate_freq(self):
+        predictions, y_eval = self.get_eval_data()
 
-        with open('weights_mmma.json', 'w') as outfile:
-            json_string = json.dumps(layers)
-            outfile.write(json_string)
+        eval_value = EvalMetrics.pe(predictions, y_eval)
 
-    def weight_mmma_plot(self):
+        self.plot_error_freq(eval_value)
+        self.plot_cumu_abs_error_freq(eval_value)
+
+    def evaluate(self, metrics):
+        predictions, y_eval = self.get_eval_data()
+
+        eval_values = []
+
+        for metric in metrics:
+            eval_values.append(metric(predictions, y_eval))
+
+        return eval_values
+
+    def plot_prediction(self):
+        predictions, y_eval = self.get_eval_data()
+
+        line_up, = plt.plot(predictions, label='Prediction')
+        line_down, = plt.plot(y_eval, label='Target')
+        plt.legend(handles=[line_up, line_down])
+        plt.figure()
+
+    def plot_weight_mmma(self):
         weights = self.model.get_weights()
 
         for layer in weights:
@@ -115,69 +131,3 @@ class ModelEvaluator:
         plt.xticks(np.arange(bin_min, bin_max + 1, step=10))
         plt.minorticks_on()
         plt.figure()
-
-    def evaluate_freq(self, scaler=None):
-        i = 0
-        errors = []
-
-        for inputD in self.eval_input:
-            res, label = self._predict_and_shape(inputD, self.eval_labels[i], scaler)
-
-            error = (res - label) / label * 100
-            errors.extend(error)
-            i += 1
-
-        self.plot_error_freq(errors)
-        self.plot_cumu_abs_error_freq(errors)
-
-    def evaluate(self, scaler=None):
-        i = 0
-        total_error = 0
-        total_error_percent = 0
-
-        max_error = 0
-
-        predictions = []
-        labels = []
-        for inputD in self.eval_input:
-            res, label = self._predict_and_shape(inputD, self.eval_labels[i], scaler)
-
-            predictions.append(res)
-            labels.append(label)
-
-            error = abs(res - label)
-
-            mean_error = np.mean(error)
-
-            if mean_error > max_error:
-                max_error = mean_error
-
-            total_error_percent += np.mean(error / label) * 100
-            total_error += mean_error
-
-            i += 1
-
-        print("MAE:     " + f'{(total_error / i):.2f}')
-        print("MAPE:    " + f'{(total_error_percent / i):.2f}')
-        print("MAX:     " + f'{max_error:.2f}')
-
-        line_up, = plt.plot(predictions, label='Prediction')
-        line_down, = plt.plot(labels, label='Target')
-        plt.legend(handles=[line_up, line_down])
-        plt.figure()
-
-    def _predict_and_shape(self, inputD, label, scaler=None):
-        predict = np.array([inputD])
-        p_1 = self.model.predict(predict)
-
-        res = p_1
-        label = np.asarray(label)
-
-        if scaler is not None:
-            res = scaler.inverse_transform(res)
-            label = scaler.inverse_transform(label.reshape(1, -1))
-
-        res = np.reshape(res, -1)
-        label = np.reshape(label, -1)
-
-        return res, label

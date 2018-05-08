@@ -1,36 +1,33 @@
 from ModelBuilder import ModelBuilder
 from Tools import *
-from Config import *
+from Config import Config
 from ModelEvaluator import ModelEvaluator
 from DataHandler import DataHandler
+import EvalMetrics
 
-cfg = SingleConfig()
 
-dh = DataHandler(cfg, cfg.HOUSE_ID)
+cfg = Config()
+dh = DataHandler(cfg)
 
 INPUT_SHAPE = (len(dh.train_input[0]),)
 
 mb = ModelBuilder(cfg, INPUT_SHAPE)
-
 model = mb.nn_w()
 
-print("Fitting model")
 model.fit(np.array(dh.train_input), np.array(dh.train_labels), epochs=cfg.EPOCHS, batch_size=cfg.BATCH_SIZE, verbose=2)
 
-print("------------------Evaluation-------------------")
-evaluation = model.evaluate(np.array(dh.eval_input), np.array(dh.eval_labels), cfg.BATCH_SIZE, verbose=0)
+evaluator = ModelEvaluator(cfg, model, dh)
 
-for thing in evaluation:
-    print(thing)
+eval_values = evaluator.evaluate([EvalMetrics.mape, EvalMetrics.mer, EvalMetrics.mse])
 
-evaluator = ModelEvaluator(model, dh.eval_input, dh.eval_labels)
+print("Evaluations")
+for eval_value in eval_values:
+    print(f'{eval_value:.2f}')
 
-evaluator.evaluate(dh.scaler)
+evaluator.plot_prediction()
 
-#evaluator.evaluate_freq(dh.scaler)
+evaluator.evaluate_freq()
 
-#evaluator.weight_mmma()
-
-#evaluator.weight_mmma_plot()
+evaluator.plot_weight_mmma()
 
 plt.show()

@@ -1,7 +1,7 @@
 from Wrapper import Wrapper
-from DataHandler import DataHandler
+import EvalMetrics
 
-w = Wrapper()
+w = Wrapper(EvalMetrics.mape)
 
 best_ff, eval_ff = w.best_first_ff()
 
