@@ -24,6 +24,7 @@ class Config:
         self.OPTIMIZER = Adamax()
         self.SCALE_VALUES = True
         self.SCALE_RANGE = (-1, 1)
+        self.REMOVE_OUTLIERS = True
 
         self.TRAINING_CUT = 0.7
         self.DATA_SLICE = 1

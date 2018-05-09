@@ -15,14 +15,19 @@ class DataHandler:
         self.house_id = cfg.HOUSE_ID
         self.data = self._fetch_data(self.house_id)
 
+        if cfg.REMOVE_OUTLIERS is True:
+            data_to_continue = self._remove_outliers(0.99, 80000)
+        else:
+            data_to_continue = self.data
+
         self.scaler = MinMaxScaler(feature_range=cfg.SCALE_RANGE)
 
         if cfg.SCALE_VALUES is True:
-            scaled_data = self._get_scaled_data()
+            scaled_data = self._get_scaled_data(data_to_continue)
             train_input, train_labels, eval_input, eval_labels = self._construct_training_data(scaled_data)
         else:
             self.scaler = None
-            train_input, train_labels, eval_input, eval_labels = self._construct_training_data(self.data)
+            train_input, train_labels, eval_input, eval_labels = self._construct_training_data(data_to_continue)
 
         self.train_input = train_input
         self.train_labels = train_labels
@@ -46,6 +51,19 @@ class DataHandler:
             data.append(HourData(house_id, timestamp, consumption))
 
         return data
+
+    def _remove_outliers(self, percentile, outlier_min):
+        percentile_down_to = sorted(self.data, key=lambda tup: tup[2])[int(len(self.data) * percentile)].consumption
+
+        new_data = []
+
+        for d in self.data:
+            if d.consumption > outlier_min:
+                new_data.append(HourData(d.house_id, d.timestamp, percentile_down_to))
+            else:
+                new_data.append(HourData(d.house_id, d.timestamp, d.consumption))
+
+        return new_data
 
     def _extract_features(self, data):
         X = []
@@ -211,10 +229,10 @@ class DataHandler:
 
         return train_input, train_labels, eval_input, eval_labels
 
-    def _get_scaled_data(self):
+    def _get_scaled_data(self, data):
         consumption_list = list()
 
-        for i in self.data:
+        for i in data:
             consumption_list.append([float(i.consumption)])
 
         consumption_list = np.asarray(consumption_list)
@@ -222,7 +240,7 @@ class DataHandler:
 
         scaled_data = list()
 
-        for j in range(len(self.data)):
-            scaled_data.append(HourData(self.data[j].house_id, self.data[j].timestamp, scaled_consumption[j][0]))
+        for j in range(len(data)):
+            scaled_data.append(HourData(data[j].house_id, data[j].timestamp, scaled_consumption[j][0]))
 
         return scaled_data
