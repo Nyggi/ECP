@@ -29,6 +29,6 @@ def mer(predictions, y_eval):
 # Percentage Error
 def pe(predictions, y_eval):
     errors = y_eval - predictions
-    ape = errors / (sum(y_eval) / len(y_eval)) * 100
+    pe = errors / y_eval * 100
 
-    return ape.reshape(-1)
+    return pe.reshape(-1)

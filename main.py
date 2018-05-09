@@ -14,6 +14,7 @@ INPUT_SHAPE = (len(dh.train_input[0]),)
 mb = ModelBuilder(cfg, INPUT_SHAPE)
 model = mb.nn_w()
 
+#fit_model(cfg, model, dh, True)
 model.fit(np.array(dh.train_input), np.array(dh.train_labels), epochs=cfg.EPOCHS, batch_size=cfg.BATCH_SIZE, verbose=2)
 
 evaluator = ModelEvaluator(cfg, model, dh)

@@ -10,6 +10,12 @@ class ModelEvaluator:
         self.model = model
         self.dh = dh
 
+    def scale_values(self, predictions, labels):
+        predictions = self.dh.scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
+        labels = self.dh.scaler.inverse_transform(np.array(labels).reshape(-1, 1))
+
+        return predictions, labels
+
     def get_eval_data(self):
         X_eval = np.array(self.dh.eval_input)
         y_eval = np.array(self.dh.eval_labels)
@@ -17,10 +23,17 @@ class ModelEvaluator:
         predictions = self.model.predict(X_eval)
 
         if self.cfg.SCALE_VALUES:
-            predictions = self.dh.scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
-            y_eval = self.dh.scaler.inverse_transform(np.array(y_eval).reshape(-1, 1))
+            predictions, y_eval = self.scale_values(predictions, y_eval)
 
         return predictions, y_eval
+
+    def get_evaluation_per_metric(self, metrics, predictions, labels):
+        eval_values = []
+
+        for metric in metrics:
+            eval_values.append(metric(predictions, labels))
+
+        return eval_values
 
     def evaluate_freq(self):
         predictions, y_eval = self.get_eval_data()
@@ -33,12 +46,18 @@ class ModelEvaluator:
     def evaluate(self, metrics):
         predictions, y_eval = self.get_eval_data()
 
-        eval_values = []
+        return self.get_evaluation_per_metric(metrics, predictions, y_eval)
 
-        for metric in metrics:
-            eval_values.append(metric(predictions, y_eval))
+    def evaluate_data(self, metrics, inputs, labels):
+        X_eval = np.array(inputs)
+        y_eval = np.array(labels)
 
-        return eval_values
+        predictions = self.model.predict(X_eval)
+
+        if self.cfg.SCALE_VALUES:
+            predictions, y_eval = self.scale_values(predictions, y_eval)
+
+        return self.get_evaluation_per_metric(metrics, predictions, y_eval)
 
     def plot_prediction(self):
         predictions, y_eval = self.get_eval_data()
