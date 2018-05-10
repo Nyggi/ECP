@@ -3,6 +3,8 @@ from DataHandler import DataHandler
 from ModelBuilder import ModelBuilder
 from ModelEvaluator import ModelEvaluator
 import numpy as np
+import matplotlib.pyplot as plt
+import EvalMetrics
 
 
 class ECP:
@@ -46,7 +48,9 @@ class ECP:
         return models
 
     def train_models(self):
+        print("Training models")
         for i in range(24):
+            print(i)
             cfg = self.cfgs[i]
             model = self.models[i]
             dh = self.dhs[i]
@@ -54,7 +58,7 @@ class ECP:
             X = np.array(dh.train_input)
             y = np.array(dh.train_labels)
 
-            model.fit(X, y, epochs=cfg.EPOCHS, batch_size=cfg.BATCH_SIZE, verbose=2)
+            model.fit(X, y, epochs=cfg.EPOCHS, batch_size=cfg.BATCH_SIZE, verbose=0)
 
     def eval_models(self, metrics):
         evals = []
@@ -63,11 +67,6 @@ class ECP:
             cfg = self.cfgs[i]
             model = self.models[i]
             dh = self.dhs[i]
-
-            X = np.array(dh.eval_input)
-            y = np.array(dh.eval_labels)
-
-            model.fit(X, y, epochs=cfg.EPOCHS, batch_size=cfg.BATCH_SIZE, verbose=2)
 
             evaluator = ModelEvaluator(cfg, model, dh)
 
@@ -83,5 +82,65 @@ class ECP:
             metrics_combined[i] = metrics_combined[i] / len(evals)
 
         return evals, metrics_combined
+
+    def plot_days(self):
+        predictions_data = []
+        y_evals = []
+
+        for i in range(24):
+            cfg = self.cfgs[i]
+            model = self.models[i]
+            dh = self.dhs[i]
+
+            evaluator = ModelEvaluator(cfg, model, dh)
+
+            predictions, y_eval = evaluator.get_eval_data()
+
+            predictions_data.append(predictions)
+            y_evals.append(y_eval)
+
+        predictions_day = []
+        y_eval_day = []
+
+        # -1 because hour 23 have one less entry than the other hours
+        for i in range(len(predictions_data[0]) - 1):
+            day_p = []
+            day_e = []
+
+            for h in range(24):
+                day_p.append(predictions_data[h][i])
+                day_e.append(y_evals[h][i])
+
+            predictions_day.append(day_p)
+            y_eval_day.append(day_e)
+
+        day_eval = []
+
+        for i in range(len(predictions_day)):
+            p = predictions_day[i]
+            e = y_eval_day[i]
+            mape = EvalMetrics.mape(np.array(p), np.array(e))
+
+            day_eval.append([mape, p, e, i % 7, i // 30])
+
+        day_eval.sort(key=lambda x: x[0])
+
+        print(f'Mape: {day_eval[0][0]:.2f} Day: {day_eval[0][3]} Month: {day_eval[0][4]}')
+
+        line_up, = plt.plot(day_eval[0][1], label='Prediction')
+        line_down, = plt.plot(day_eval[0][2], label='Target')
+        plt.legend(handles=[line_up, line_down])
+        plt.figure()
+
+        print(f'Mape: {day_eval[-1][0]:.2f} Day: {day_eval[-1][3]} Month: {day_eval[-1][4]}')
+
+        line_up, = plt.plot(day_eval[-1][1], label='Prediction')
+        line_down, = plt.plot(day_eval[-1][2], label='Target')
+        plt.legend(handles=[line_up, line_down])
+        plt.figure()
+
+        plt.show()
+
+
 
 

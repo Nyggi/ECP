@@ -13,3 +13,5 @@ for e in eval_indi:
 
 print("Total")
 print(evals)
+
+ecp.plot_days()
