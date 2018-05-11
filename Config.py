@@ -27,15 +27,15 @@ class Config:
         self.REMOVE_OUTLIERS = True
 
         self.TRAINING_CUT = 0.7
-        self.DATA_SLICE = 1
+        self.DATA_SLICE = 0.25
         self.GRAPH_CUT = 1
-        self.SHUFFLE = True
+        self.SHUFFLE = False
 
         # Features
         # Same hours in past days past weeks
         # X hours past
         # Day of week
-        self.FEATURES = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+        self.FEATURES = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         self.FEATURES_BINARY_ENCODED = False
         self.PADDING = 0
 
@@ -43,3 +43,4 @@ class Config:
         self.WEKA_FEATURES = True
         self.WRITE_CSV = False
         self.WEKA_MULTIPLE_HOUSEHOLDS = False
+        self.WEKA_HOUSEHOLD_IDS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]

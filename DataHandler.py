@@ -12,33 +12,40 @@ class DataHandler:
 
     def __init__(self, cfg):
         self.cfg = cfg
-        self.data = self._fetch_data(self.cfg.HOUSE_ID)
 
-        if self.cfg.WEKA_MULTIPLE_HOUSEHOLDS:
+        self.train_input = []
+        self.train_labels = []
+        self.eval_input = []
+        self.eval_labels = []
+
+        if len(self.cfg.WEKA_HOUSEHOLD_IDS) > 1:
             self.households = 'multiple'
         else:
             self.households = 'single'
 
-        if cfg.REMOVE_OUTLIERS is True:
-            data_to_continue = self._remove_outliers(0.99, 80000)
-        else:
-            data_to_continue = self.data
+        for household in self.cfg.WEKA_HOUSEHOLD_IDS:
+            self.data = self._fetch_data(household)
 
-        self.scaler = MinMaxScaler(feature_range=cfg.SCALE_RANGE)
+            if self.cfg.REMOVE_OUTLIERS is True:
+                data_to_continue = self._remove_outliers(0.99, 80000)
+            else:
+                data_to_continue = self.data
 
-        if cfg.SCALE_VALUES is True:
-            scaled_data = self._get_scaled_data(data_to_continue)
-            train_input, train_labels, eval_input, eval_labels = self._construct_training_data(scaled_data)
-        else:
-            self.scaler = None
-            train_input, train_labels, eval_input, eval_labels = self._construct_training_data(data_to_continue)
+            self.scaler = MinMaxScaler(feature_range=self.cfg.SCALE_RANGE)
 
-        self.train_input = train_input
-        self.train_labels = train_labels
-        self.eval_input = eval_input
-        self.eval_labels = eval_labels
+            if self.cfg.SCALE_VALUES is True:
+                scaled_data = self._get_scaled_data(data_to_continue)
+                train_input, train_labels, eval_input, eval_labels = self._construct_training_data(scaled_data)
+            else:
+                self.scaler = None
+                train_input, train_labels, eval_input, eval_labels = self._construct_training_data(data_to_continue)
 
-        if cfg.WRITE_CSV:
+            self.train_input.extend(train_input)
+            self.train_labels.extend(train_labels)
+            self.eval_input.extend(eval_input)
+            self.eval_labels.extend(eval_labels)
+
+        if self.cfg.WRITE_CSV:
             self._write_to_csv()
 
     def _write_to_csv(self):

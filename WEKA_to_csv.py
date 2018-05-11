@@ -1,6 +1,8 @@
-WEKA_MULTIPLE_HOUSEHOLDS = False
+from Config import Config
 
-if WEKA_MULTIPLE_HOUSEHOLDS:
+cfg = Config()
+
+if len(cfg.WEKA_HOUSEHOLD_IDS) > 1:
     households = 'multiple'
 else:
     households = 'single'
