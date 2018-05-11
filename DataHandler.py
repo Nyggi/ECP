@@ -12,60 +12,41 @@ class DataHandler:
 
     def __init__(self, cfg):
         self.cfg = cfg
+        self.data = self._fetch_data(self.cfg.HOUSE_ID)
 
-        self.train_input = []
-        self.train_labels = []
-        self.eval_input = []
-        self.eval_labels = []
-
-        if len(self.cfg.WEKA_HOUSEHOLD_IDS) > 1:
-            self.households = 'multiple'
+        if cfg.REMOVE_OUTLIERS is True:
+            data_to_continue = self._remove_outliers(0.99, 80000)
         else:
-            self.households = 'single'
+            data_to_continue = self.data
 
-        for household in self.cfg.WEKA_HOUSEHOLD_IDS:
-            self.data = self._fetch_data(household)
+        self.scaler = MinMaxScaler(feature_range=cfg.SCALE_RANGE)
 
-            if self.cfg.REMOVE_OUTLIERS is True:
-                data_to_continue = self._remove_outliers(0.99, 80000)
-            else:
-                data_to_continue = self.data
+        if cfg.SCALE_VALUES is True:
+            scaled_data = self._get_scaled_data(data_to_continue)
+            train_input, train_labels, eval_input, eval_labels = self._construct_training_data(scaled_data)
+        else:
+            self.scaler = None
+            train_input, train_labels, eval_input, eval_labels = self._construct_training_data(data_to_continue)
 
-            self.scaler = MinMaxScaler(feature_range=self.cfg.SCALE_RANGE)
+        self.train_input = train_input
+        self.train_labels = train_labels
+        self.eval_input = eval_input
+        self.eval_labels = eval_labels
 
-            if self.cfg.SCALE_VALUES is True:
-                scaled_data = self._get_scaled_data(data_to_continue)
-                train_input, train_labels, eval_input, eval_labels = self._construct_training_data(scaled_data)
-            else:
-                self.scaler = None
-                train_input, train_labels, eval_input, eval_labels = self._construct_training_data(data_to_continue)
-
-            self.train_input.extend(train_input)
-            self.train_labels.extend(train_labels)
-            self.eval_input.extend(eval_input)
-            self.eval_labels.extend(eval_labels)
-
-        if self.cfg.WRITE_CSV:
-            self._write_to_csv()
-
-    def _write_to_csv(self):
-        filepath = 'WEKA_features/features_for_WEKA_' + str(self.households) + '/PandasData' + str(self.cfg.HOUR_TO_PREDICT) + '.csv'
-
-        header = self._get_csv_header()
-
+    def _get_csv_data(self):
         features = self.train_input + self.eval_input
         results = self.train_labels + self.eval_labels
 
-        with open(filepath, 'w') as f:
+        content_for_csv = ''
 
-            f.write(header)
+        for i in range(len(features)):
+            for j in features[i]:
+                content_for_csv += str(j)
+                content_for_csv += ','
+            content_for_csv += str(results[i])
+            content_for_csv += '\n'
 
-            for i in range(len(features)):
-                for j in features[i]:
-                    f.write(str(j))
-                    f.write(',')
-                f.write(str(results[i]))
-                f.write('\n')
+        return content_for_csv
 
     def _get_csv_header(self):
         past_hours_padding = self.cfg.HOURS_PAST + 12 + self.cfg.HOUR_TO_PREDICT
@@ -157,7 +138,12 @@ class DataHandler:
 
         padding += 24 - padding % 24
 
-        filepath = 'WEKA_features/best_features_from_WEKA_' + str(self.households) + '/BestFeatures' + str(self.cfg.HOUR_TO_PREDICT) + '.csv'
+        if len(self.cfg.WEKA_HOUSEHOLD_IDS) > 1:
+            amount_of_households = 'multiple'
+        else:
+            amount_of_households = 'single'
+
+        filepath = 'WEKA_features/best_features_from_WEKA_' + str(amount_of_households) + '/BestFeatures' + str(self.cfg.HOUR_TO_PREDICT) + '.csv'
         csvfile = open(filepath, 'r')
 
         for line in csvfile:
