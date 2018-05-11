@@ -1,3 +1,4 @@
+from random import uniform, randrange
 from keras.losses import *
 from keras.optimizers import *
 
@@ -34,6 +35,10 @@ class Config:
         # Same hours in past days past weeks
         # X hours past
         # Day of week
-        self.FEATURES = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
-        self.FEATURES_BINARY_ENCODED = False
+        self.FEATURES = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         self.PADDING = 0
+
+        #If WEKA_FEATURES is True, FEATURES will not be used.
+        self.WEKA_FEATURES = True
+        self.WRITE_CSV = False
+        self.WEKA_MULTIPLE_HOUSEHOLDS = False

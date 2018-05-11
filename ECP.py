@@ -15,6 +15,7 @@ class ECP:
 
     def create_configs(self, house_id):
         configs = []
+        print('CREATING CONFIGS')
 
         for i in range(24):
             cfg = Config()
@@ -30,14 +31,17 @@ class ECP:
 
     def create_datahandlers(self):
         dhs = []
+        print('CREATING DATAHANDLERS')
 
         for c in self.cfgs:
+            print(c.HOUR_TO_PREDICT)
             dhs.append(DataHandler(c))
 
         return dhs
 
     def create_models(self):
         models = []
+        print('CREATING MODELS')
 
         for i in range(24):
             input_shape = (len(self.dhs[i].train_input[0]),)

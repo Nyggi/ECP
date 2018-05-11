@@ -12,8 +12,12 @@ class DataHandler:
 
     def __init__(self, cfg):
         self.cfg = cfg
-        self.house_id = cfg.HOUSE_ID
-        self.data = self._fetch_data(self.house_id)
+        self.data = self._fetch_data(self.cfg.HOUSE_ID)
+
+        if self.cfg.WEKA_MULTIPLE_HOUSEHOLDS:
+            self.households = 'multiple'
+        else:
+            self.households = 'single'
 
         if cfg.REMOVE_OUTLIERS is True:
             data_to_continue = self._remove_outliers(0.99, 80000)
@@ -33,6 +37,247 @@ class DataHandler:
         self.train_labels = train_labels
         self.eval_input = eval_input
         self.eval_labels = eval_labels
+
+        if cfg.WRITE_CSV:
+            self._write_to_csv()
+
+    def _write_to_csv(self):
+        #Empties file
+        filepath = 'WEKA_features/features_for_WEKA_' + str(self.households) + '/PandasData' + str(self.cfg.HOUR_TO_PREDICT) + '.csv'
+        open(filepath, 'w').close()
+
+        self._names_in_csv(filepath)
+
+        features = self.train_input
+        results = self.train_labels
+        c = 0
+
+        for thing in self.eval_input:
+            features.append(thing)
+
+        for thing in self.eval_labels:
+            results.append(thing)
+
+        with open(filepath, 'a+') as f:
+
+            for i in features:
+                for j in i:
+                    f.write(str(j))
+                    f.write(',')
+                f.write(str(results[c]))
+                f.write('\n')
+
+                c += 1
+
+    def _names_in_csv(self, filepath):
+        past_hours_padding = self.cfg.HOURS_PAST + 12 + self.cfg.HOUR_TO_PREDICT
+        past_days_padding = self.cfg.WEEKS * 24 * 7
+
+        if past_days_padding > past_hours_padding:
+            padding = past_days_padding
+        else:
+            padding = past_hours_padding
+
+        padding += 24 - padding % 24
+
+        with open(filepath, 'a+') as f:
+
+            # Same hour in same day in past weeks
+            if self.cfg.FEATURES[0]:
+                for w in range(1, self.cfg.WEEKS + 1):
+                    hour = (w * 7 * 24)
+                    for h in range(hour - self.cfg.PADDING, hour + 1 + self.cfg.PADDING):
+                        f.write('0_' + str(h) + ',')
+
+            # Same hour in same day in past weeks STANDARD DEVIATION
+            if self.cfg.FEATURES[1]:
+                f.write('1_0,')
+
+
+            # Same hour in same day in past weeks MIN, MEAN, MAX
+            if self.cfg.FEATURES[2]:
+                f.write('2_0,')
+                f.write('2_1,')
+                f.write('2_2,')
+
+            # Same hour in past days
+            if self.cfg.FEATURES[3]:
+                for d in range(1, self.cfg.DAYS + 1):
+                    hour = ((d + 1) * 24)
+                    for h in range(hour - self.cfg.PADDING, hour + 1 + self.cfg.PADDING):
+                        f.write('3_' + str(h) + ',')
+
+            # Same hour in past days STANDARD DEVIATION
+            if self.cfg.FEATURES[4]:
+                f.write('4_0,')
+
+            # Same hour in past days MIN, MEAN, MAX
+            if self.cfg.FEATURES[5]:
+                f.write('5_0,')
+                f.write('5_1,')
+                f.write('5_2,')
+
+            # Past hours
+            if self.cfg.FEATURES[6]:
+                for h in range(self.cfg.HOURS_PAST):
+                    hour = (12 + h + self.cfg.HOUR_TO_PREDICT)
+                    f.write('6_' + str(hour) + ',')
+
+            # Day of the week
+            if self.cfg.FEATURES[7]:
+                f.write('7_0,')
+                f.write('7_1,')
+
+            # Month of year
+            if self.cfg.FEATURES[8]:
+                f.write('8_0,')
+                f.write('8_1,')
+
+            # Season of year - 0 Winter ... 3 Autumn
+            if self.cfg.FEATURES[9]:
+                f.write('9_0,')
+                f.write('9_1,')
+
+            # Holiday
+            if self.cfg.FEATURES[10]:
+                f.write('10_0,')
+
+            f.write('label\n')
+
+    def _extract_features_weka(self, data):
+        X = []
+        y = []
+
+        past_hours_padding = self.cfg.HOURS_PAST + 12 + self.cfg.HOUR_TO_PREDICT
+        past_days_padding = self.cfg.WEEKS * 24 * 7
+
+        if past_days_padding > past_hours_padding:
+            padding = past_days_padding
+        else:
+            padding = past_hours_padding
+
+        padding += 24 - padding % 24
+
+        filepath = 'WEKA_features/best_features_from_WEKA_' + str(self.households) + '/BestFeatures' + str(self.cfg.HOUR_TO_PREDICT) + '.csv'
+        csvfile = open(filepath, 'r')
+
+        for line in csvfile:
+            csv_line = line
+
+        csv_features = csv_line.split(',')
+        csvfile.close
+
+        for label in range(padding + self.cfg.HOUR_TO_PREDICT, len(data), 24):
+            features = []
+
+            for feature in csv_features:
+                splitted_feature = str(feature).split('_')
+                index = splitted_feature[0]
+                value = splitted_feature[1]
+
+                # Same hour in same day in past weeks OR
+                # Same hour in past days OR
+                # Past hours
+                if index == '0' or index == '3' or index == '6':
+                    features.append(data[label - int(value)].consumption)
+
+                # Same hour in same day in past weeks STANDARD DEVIATION
+                if index == '1':
+                    hours = []
+                    for w in range(1, self.cfg.WEEKS + 1):
+                        hour = label - (w * 7 * 24)
+                        hours.append(data[hour].consumption)
+
+                    sd = np.std(hours)
+                    features.append(sd)
+
+                # Same hour in same day in past weeks MIN, MEAN, MAX
+                if index == '2':
+                    hours = []
+                    for w in range(1, self.cfg.WEEKS + 1):
+                        hour = label - (w * 7 * 24)
+                        hours.append(data[hour].consumption)
+
+                    if value == '0':
+                        features.append(max(hours))
+                    if value == '1':
+                        features.append(min(hours))
+                    if value == '2':
+                        features.append(np.mean(hours))
+
+                # Same hour in past days STANDARD DEVIATION
+                if index == '4':
+                    hours = []
+                    for d in range(1, self.cfg.DAYS + 1):
+                        hour = label - ((d + 1) * 24)
+                        hours.append(data[hour].consumption)
+
+                    sd = np.std(hours)
+                    features.append(sd)
+
+                # Same hour in past days MIN, MEAN, MAX
+                if index == '5':
+                    hours = []
+                    for d in range(1, self.cfg.DAYS + 1):
+                        hour = label - ((d + 1) * 24)
+                        hours.append(data[hour].consumption)
+
+                    if value == '0':
+                        features.append(max(hours))
+                    if value == '1':
+                        features.append(min(hours))
+                    if value == '2':
+                        features.append(np.mean(hours))
+
+                # Day of the week
+                if index == '7':
+                    weekday = data[label].timestamp.weekday()
+                    weekday_rad = weekday * (2. * np.pi / 7)
+                    weekday_sin = np.sin(weekday_rad)
+                    weekday_cos = np.cos(weekday_rad)
+
+                    if value == '0':
+                        features.append(weekday_sin)
+                    if value == '1':
+                        features.append(weekday_cos)
+
+                # Month of year
+                if index == '8':
+                    month = data[label].timestamp.month
+                    month_rad = month * (2. * np.pi / 12)
+                    month_sin = np.sin(month_rad)
+                    month_cos = np.cos(month_rad)
+
+                    if value == '0':
+                        features.append(month_sin)
+                    if value == '1':
+                        features.append(month_cos)
+
+                # Season of year - 0 Winter ... 3 Autumn
+                if index == '9':
+                    month = data[label].timestamp.month
+                    season = int((month + 1) / 3) % 4
+                    season_rad = season * (2. * np.pi / 12)
+                    season_sin = np.sin(season_rad)
+                    season_cos = np.cos(season_rad)
+
+                    if value == '0':
+                        features.append(season_sin)
+                    if value == '1':
+                        features.append(season_cos)
+
+                # Holiday
+                if index == '10':
+                    weekday = data[label].timestamp.weekday()
+                    if weekday == 5 or weekday == 6:
+                        features.append(1)
+                    else:
+                        features.append(0)
+
+                X.append(features)
+                y.append(data[label].consumption)
+
+        return X, y
 
     def _fetch_data(self, house_id):
         connection = mysql.connector.connect(host='localhost', user='root', password='root',
@@ -147,45 +392,30 @@ class DataHandler:
             # Day of the week
             if self.cfg.FEATURES[7]:
                 weekday = data[label].timestamp.weekday()
-                if self.cfg.FEATURES_BINARY_ENCODED:
-                    weekday_bin = f'{weekday:03b}'
-                    for b in weekday_bin:
-                        features.append(int(b))
-                else:
-                    weekday_rad = weekday * (2. * np.pi / 7)
-                    weekday_sin = np.sin(weekday_rad)
-                    weekday_cos = np.cos(weekday_rad)
-                    features.append(weekday_sin)
-                    features.append(weekday_cos)
+                weekday_rad = weekday * (2. * np.pi / 7)
+                weekday_sin = np.sin(weekday_rad)
+                weekday_cos = np.cos(weekday_rad)
+                features.append(weekday_sin)
+                features.append(weekday_cos)
 
             # Month of year
             if self.cfg.FEATURES[8]:
                 month = data[label].timestamp.month
-                if self.cfg.FEATURES_BINARY_ENCODED:
-                    month_bin = f'{month:04b}'
-                    for b in month_bin:
-                        features.append(int(b))
-                else:
-                    month_rad = month * (2. * np.pi / 12)
-                    month_sin = np.sin(month_rad)
-                    month_cos = np.cos(month_rad)
-                    features.append(month_sin)
-                    features.append(month_cos)
+                month_rad = month * (2. * np.pi / 12)
+                month_sin = np.sin(month_rad)
+                month_cos = np.cos(month_rad)
+                features.append(month_sin)
+                features.append(month_cos)
 
             # Season of year - 0 Winter ... 3 Autumn
             if self.cfg.FEATURES[9]:
                 month = data[label].timestamp.month
                 season = int((month + 1) / 3) % 4
-                if self.cfg.FEATURES_BINARY_ENCODED:
-                    season_bin = f'{season:02b}'
-                    for b in season_bin:
-                        features.append(int(b))
-                else:
-                    season_rad = season * (2. * np.pi / 12)
-                    season_sin = np.sin(season_rad)
-                    season_cos = np.cos(season_rad)
-                    features.append(season_sin)
-                    features.append(season_cos)
+                season_rad = season * (2. * np.pi / 12)
+                season_sin = np.sin(season_rad)
+                season_cos = np.cos(season_rad)
+                features.append(season_sin)
+                features.append(season_cos)
 
             # Holiday
             if self.cfg.FEATURES[10]:
@@ -203,7 +433,10 @@ class DataHandler:
     def _construct_training_data(self, data):
         sliced_data = data[:int(len(data) * self.cfg.DATA_SLICE)]
 
-        input_data, labels = self._extract_features(sliced_data)
+        if self.cfg.WEKA_FEATURES:
+            input_data, labels = self._extract_features_weka(sliced_data)
+        else:
+            input_data, labels = self._extract_features(sliced_data)
 
         shuffled_data = []
 

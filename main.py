@@ -5,7 +5,6 @@ from ModelEvaluator import ModelEvaluator
 from DataHandler import DataHandler
 import EvalMetrics
 
-
 cfg = Config()
 dh = DataHandler(cfg)
 
@@ -27,8 +26,8 @@ for eval_value in eval_values:
 
 evaluator.plot_prediction()
 
-evaluator.evaluate_freq()
+#evaluator.evaluate_freq()
 
-evaluator.plot_weight_mmma()
+#evaluator.plot_weight_mmma()
 
 plt.show()
