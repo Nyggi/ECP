@@ -1,5 +1,4 @@
-from random import uniform, randrange
-from keras.losses import *
+from keras import losses
 from keras.optimizers import *
 
 
@@ -21,7 +20,7 @@ class Config:
 
         self.BIAS = True
         self.ACTIVATION_FUNCTION = 'tanh'
-        self.LOSS = mean_squared_error
+        self.LOSS = losses.mean_absolute_error
         self.OPTIMIZER = Adamax()
         self.SCALE_VALUES = True
         self.SCALE_RANGE = (-1, 1)
@@ -30,15 +29,17 @@ class Config:
         self.TRAINING_CUT = 0.7
         self.DATA_SLICE = 1
         self.GRAPH_CUT = 1
+        self.SHUFFLE = True
 
         # Features
         # Same hours in past days past weeks
         # X hours past
         # Day of week
-        self.FEATURES = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        self.FEATURES = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+        self.FEATURES_BINARY_ENCODED = False
         self.PADDING = 0
 
-        #If WEKA_FEATURES is True, FEATURES will not be used.
+        # If WEKA_FEATURES is True, FEATURES will not be used.
         self.WEKA_FEATURES = True
         self.WRITE_CSV = False
         self.WEKA_MULTIPLE_HOUSEHOLDS = False

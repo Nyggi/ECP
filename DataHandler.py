@@ -48,26 +48,17 @@ class DataHandler:
 
         self._names_in_csv(filepath)
 
-        features = self.train_input
-        results = self.train_labels
-        c = 0
-
-        for thing in self.eval_input:
-            features.append(thing)
-
-        for thing in self.eval_labels:
-            results.append(thing)
+        features = self.train_input + self.eval_input
+        results = self.train_labels + self.eval_labels
 
         with open(filepath, 'a+') as f:
 
-            for i in features:
-                for j in i:
+            for i in range(len(features)):
+                for j in features[i]:
                     f.write(str(j))
                     f.write(',')
-                f.write(str(results[c]))
+                f.write(str(results[i]))
                 f.write('\n')
-
-                c += 1
 
     def _names_in_csv(self, filepath):
         past_hours_padding = self.cfg.HOURS_PAST + 12 + self.cfg.HOUR_TO_PREDICT
@@ -165,7 +156,7 @@ class DataHandler:
             csv_line = line
 
         csv_features = csv_line.split(',')
-        csvfile.close
+        csvfile.close()
 
         for label in range(padding + self.cfg.HOUR_TO_PREDICT, len(data), 24):
             features = []
@@ -274,8 +265,8 @@ class DataHandler:
                     else:
                         features.append(0)
 
-                X.append(features)
-                y.append(data[label].consumption)
+            X.append(features)
+            y.append(data[label].consumption)
 
         return X, y
 
@@ -438,27 +429,31 @@ class DataHandler:
         else:
             input_data, labels = self._extract_features(sliced_data)
 
-        shuffled_data = []
+        if self.cfg.SHUFFLE:
+            shuffled_data = []
 
-        for i in range(len(input_data)):
-            shuffled_data.append([input_data[i], labels[i]])
+            for i in range(len(input_data)):
+                shuffled_data.append([input_data[i], labels[i]])
 
-        shuffle(shuffled_data)
+            shuffle(shuffled_data)
 
-        input_data_shuffled = []
-        labels_shuffled = []
+            input_data_shuffled = []
+            labels_shuffled = []
 
-        for i in range(len(input_data)):
-            input_data_shuffled.append(shuffled_data[i][0])
-            labels_shuffled.append(shuffled_data[i][1])
+            for i in range(len(input_data)):
+                input_data_shuffled.append(shuffled_data[i][0])
+                labels_shuffled.append(shuffled_data[i][1])
+
+            input_data = input_data_shuffled
+            labels = labels_shuffled
 
         validation_cut = int(len(input_data) * self.cfg.TRAINING_CUT)
 
-        train_input = input_data_shuffled[0:validation_cut]
-        train_labels = labels_shuffled[0:validation_cut]
+        train_input = input_data[0:validation_cut]
+        train_labels = labels[0:validation_cut]
 
-        eval_input = input_data_shuffled[validation_cut:]
-        eval_labels = labels_shuffled[validation_cut:]
+        eval_input = input_data[validation_cut:]
+        eval_labels = labels[validation_cut:]
 
         return train_input, train_labels, eval_input, eval_labels
 

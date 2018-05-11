@@ -143,6 +143,13 @@ class ECP:
         plt.legend(handles=[line_up, line_down])
         plt.figure()
 
+        errors = []
+
+        for e in day_eval:
+            errors.append(e[0])
+
+        ModelEvaluator.plot_error_freq(errors)
+
         plt.show()
 
 

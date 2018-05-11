@@ -129,7 +129,8 @@ class ModelEvaluator:
         plt.minorticks_on()
         plt.figure()
 
-    def plot_error_freq(self, errors):
+    @staticmethod
+    def plot_error_freq(errors):
         bins = 25  # Odd number
         bin_min = -50
         bin_max = 50
