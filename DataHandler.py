@@ -49,16 +49,16 @@ class DataHandler:
             self._write_to_csv()
 
     def _write_to_csv(self):
-        #Empties file
         filepath = 'WEKA_features/features_for_WEKA_' + str(self.households) + '/PandasData' + str(self.cfg.HOUR_TO_PREDICT) + '.csv'
-        open(filepath, 'w').close()
 
-        self._names_in_csv(filepath)
+        header = self._get_csv_header()
 
         features = self.train_input + self.eval_input
         results = self.train_labels + self.eval_labels
 
-        with open(filepath, 'a+') as f:
+        with open(filepath, 'w') as f:
+
+            f.write(header)
 
             for i in range(len(features)):
                 for j in features[i]:
@@ -67,7 +67,7 @@ class DataHandler:
                 f.write(str(results[i]))
                 f.write('\n')
 
-    def _names_in_csv(self, filepath):
+    def _get_csv_header(self):
         past_hours_padding = self.cfg.HOURS_PAST + 12 + self.cfg.HOUR_TO_PREDICT
         past_days_padding = self.cfg.WEEKS * 24 * 7
 
@@ -78,69 +78,70 @@ class DataHandler:
 
         padding += 24 - padding % 24
 
-        with open(filepath, 'a+') as f:
+        header = ""
 
-            # Same hour in same day in past weeks
-            if self.cfg.FEATURES[0]:
-                for w in range(1, self.cfg.WEEKS + 1):
-                    hour = (w * 7 * 24)
-                    for h in range(hour - self.cfg.PADDING, hour + 1 + self.cfg.PADDING):
-                        f.write('0_' + str(h) + ',')
+        # Same hour in same day in past weeks
+        if self.cfg.FEATURES[0]:
+            for w in range(1, self.cfg.WEEKS + 1):
+                hour = (w * 7 * 24)
+                for h in range(hour - self.cfg.PADDING, hour + 1 + self.cfg.PADDING):
+                    header += '0_' + str(h) + ','
 
-            # Same hour in same day in past weeks STANDARD DEVIATION
-            if self.cfg.FEATURES[1]:
-                f.write('1_0,')
+        # Same hour in same day in past weeks STANDARD DEVIATION
+        if self.cfg.FEATURES[1]:
+            header += '1_0,'
 
+        # Same hour in same day in past weeks MIN, MEAN, MAX
+        if self.cfg.FEATURES[2]:
+            header += '2_0,'
+            header += '2_1,'
+            header += '2_2,'
 
-            # Same hour in same day in past weeks MIN, MEAN, MAX
-            if self.cfg.FEATURES[2]:
-                f.write('2_0,')
-                f.write('2_1,')
-                f.write('2_2,')
+        # Same hour in past days
+        if self.cfg.FEATURES[3]:
+            for d in range(1, self.cfg.DAYS + 1):
+                hour = ((d + 1) * 24)
+                for h in range(hour - self.cfg.PADDING, hour + 1 + self.cfg.PADDING):
+                    header += '3_' + str(h) + ','
 
-            # Same hour in past days
-            if self.cfg.FEATURES[3]:
-                for d in range(1, self.cfg.DAYS + 1):
-                    hour = ((d + 1) * 24)
-                    for h in range(hour - self.cfg.PADDING, hour + 1 + self.cfg.PADDING):
-                        f.write('3_' + str(h) + ',')
+        # Same hour in past days STANDARD DEVIATION
+        if self.cfg.FEATURES[4]:
+            header += '4_0,'
 
-            # Same hour in past days STANDARD DEVIATION
-            if self.cfg.FEATURES[4]:
-                f.write('4_0,')
+        # Same hour in past days MIN, MEAN, MAX
+        if self.cfg.FEATURES[5]:
+            header += '5_0,'
+            header += '5_1,'
+            header += '5_2,'
 
-            # Same hour in past days MIN, MEAN, MAX
-            if self.cfg.FEATURES[5]:
-                f.write('5_0,')
-                f.write('5_1,')
-                f.write('5_2,')
+        # Past hours
+        if self.cfg.FEATURES[6]:
+            for h in range(self.cfg.HOURS_PAST):
+                hour = (12 + h + self.cfg.HOUR_TO_PREDICT)
+                header += '6_' + str(hour) + ','
 
-            # Past hours
-            if self.cfg.FEATURES[6]:
-                for h in range(self.cfg.HOURS_PAST):
-                    hour = (12 + h + self.cfg.HOUR_TO_PREDICT)
-                    f.write('6_' + str(hour) + ',')
+        # Day of the week
+        if self.cfg.FEATURES[7]:
+            header += '7_0,'
+            header += '7_1,'
 
-            # Day of the week
-            if self.cfg.FEATURES[7]:
-                f.write('7_0,')
-                f.write('7_1,')
+        # Month of year
+        if self.cfg.FEATURES[8]:
+            header += '8_0,'
+            header += '8_1,'
 
-            # Month of year
-            if self.cfg.FEATURES[8]:
-                f.write('8_0,')
-                f.write('8_1,')
+        # Season of year - 0 Winter ... 3 Autumn
+        if self.cfg.FEATURES[9]:
+            header += '9_0,'
+            header += '9_1,'
 
-            # Season of year - 0 Winter ... 3 Autumn
-            if self.cfg.FEATURES[9]:
-                f.write('9_0,')
-                f.write('9_1,')
+        # Holiday
+        if self.cfg.FEATURES[10]:
+            header += '10_0,'
 
-            # Holiday
-            if self.cfg.FEATURES[10]:
-                f.write('10_0,')
+        header += 'label\n'
 
-            f.write('label\n')
+        return header
 
     def _extract_features_weka(self, data):
         X = []
