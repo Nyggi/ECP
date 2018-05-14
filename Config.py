@@ -27,7 +27,7 @@ class Config:
         self.REMOVE_OUTLIERS = True
 
         self.TRAINING_CUT = 0.7
-        self.DATA_SLICE = 0.25
+        self.DATA_SLICE = 1
         self.GRAPH_CUT = 1
         self.SHUFFLE = False
 
