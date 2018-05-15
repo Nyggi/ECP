@@ -37,6 +37,7 @@ class Config:
         # Day of week
         self.FEATURES = [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
         self.PADDING = 0
+        self.SMF = True
 
         # If WEKA_FEATURES is True, FEATURES will not be used.
         self.WEKA_FEATURES = True
