@@ -36,6 +36,7 @@ class SMF:
             if self.verbose:
                 print(h)
             cfg = Config()
+            cfg.SMF_FEATURES = True
             cfg.HOUSE_ID = self.cfg.HOUSE_ID
             cfg.HOUR_TO_PREDICT = h
             cfg.FEATURES = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1]
