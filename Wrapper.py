@@ -6,6 +6,7 @@ from DataHandler import DataHandler
 from ModelBuilder import ModelBuilder
 from ModelEvaluator import ModelEvaluator
 import EvalMetrics
+from SMF import SMF
 
 
 class Wrapper:
@@ -75,7 +76,7 @@ class Wrapper:
         return best_features, best_eval
 
     def eval_subset(self, cfg):
-        dh = DataHandler(cfg)
+        """dh = DataHandler(cfg)
 
         # model = RandomForestRegressor()
         model = ModelBuilder(cfg, (len(dh.train_input[0]),)).nn_w()
@@ -88,8 +89,15 @@ class Wrapper:
         evaluator = ModelEvaluator(cfg, model, dh)
 
         eval_value = evaluator.evaluate([EvalMetrics.mape])[0]
+        """
 
-        return eval_value
+        smf = SMF(cfg)
+
+        smf.train_model()
+
+        eval_indi, evals = smf.eval_model([EvalMetrics.mape])
+
+        return evals[0]
 
 
 

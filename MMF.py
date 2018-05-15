@@ -7,15 +7,17 @@ import matplotlib.pyplot as plt
 import EvalMetrics
 
 
-class ECP:
-    def __init__(self, house_id=None):
+class MMF:
+    def __init__(self, house_id=None, verbose=False):
+        self.verbose = verbose
         self.cfgs = self.create_configs(house_id)
         self.dhs = self.create_datahandlers()
         self.models = self.create_models()
 
     def create_configs(self, house_id):
         configs = []
-        print('CREATING CONFIGS')
+        if self.verbose:
+            print('CREATING CONFIGS')
 
         for i in range(24):
             cfg = Config()
@@ -31,17 +33,20 @@ class ECP:
 
     def create_datahandlers(self):
         dhs = []
-        print('CREATING DATAHANDLERS')
+        if self.verbose:
+            print('CREATING DATAHANDLERS')
 
         for c in self.cfgs:
-            print(c.HOUR_TO_PREDICT)
+            if self.verbose:
+                print(c.HOUR_TO_PREDICT)
             dhs.append(DataHandler(c))
 
         return dhs
 
     def create_models(self):
         models = []
-        print('CREATING MODELS')
+        if self.verbose:
+            print('CREATING MODELS')
 
         for i in range(24):
             input_shape = (len(self.dhs[i].train_input[0]),)
@@ -52,9 +57,11 @@ class ECP:
         return models
 
     def train_models(self):
-        print("Training models")
+        if self.verbose:
+            print("Training models")
         for i in range(24):
-            print(i)
+            if self.verbose:
+                print(i)
             cfg = self.cfgs[i]
             model = self.models[i]
             dh = self.dhs[i]

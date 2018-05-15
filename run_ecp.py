@@ -1,12 +1,15 @@
-from ECP import ECP
+from MMF import MMF
+from SMF import SMF
 import EvalMetrics
 
-ecp = ECP()
+mmf = MMF()
+smf = SMF()
 
-ecp.train_models()
+mmf.train_models()
+smf.train_model()
 
-eval_indi, evals = ecp.eval_models([EvalMetrics.mape])
-
+eval_indi, evals = mmf.eval_models([EvalMetrics.mape])
+print("MMF")
 print("Indivdual model evals")
 for e in eval_indi:
     print(e)
@@ -14,4 +17,17 @@ for e in eval_indi:
 print("Total")
 print(evals)
 
-ecp.plot_days()
+eval_indi, evals = smf.eval_model([EvalMetrics.mape])
+
+print("SMF")
+print("Indivdual model evals")
+for e in eval_indi:
+    print(e)
+
+print("Total")
+print(evals)
+
+mmf.plot_days()
+smf.plot_days()
+
+
