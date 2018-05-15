@@ -143,7 +143,11 @@ class DataHandler:
         else:
             amount_of_households = 'single'
 
-        filepath = 'WEKA_features/best_features_from_WEKA_' + str(amount_of_households) + '/BestFeatures' + str(self.cfg.HOUR_TO_PREDICT) + '.csv'
+        if self.cfg.SMF:
+            filepath = 'WEKA_features/best_features_from_WEKA_SMF/BestFeatures.csv'
+        else:
+            filepath = 'WEKA_features/best_features_from_WEKA_' + str(amount_of_households) + '/BestFeatures' + str(self.cfg.HOUR_TO_PREDICT) + '.csv'
+
         csvfile = open(filepath, 'r')
 
         for line in csvfile:

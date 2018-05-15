@@ -16,7 +16,7 @@ class Config:
         self.WEEKS = 5
         self.DAYS = 5
 
-        self.HIDDEN_LAYERS = [100]
+        self.HIDDEN_LAYERS = [100, 24, 4]
 
         self.BIAS = True
         self.ACTIVATION_FUNCTION = 'tanh'
@@ -40,4 +40,5 @@ class Config:
 
         # If WEKA_FEATURES is True, FEATURES will not be used.
         self.WEKA_FEATURES = True
+        self.SMF = False
         self.WEKA_HOUSEHOLD_IDS = [5]
