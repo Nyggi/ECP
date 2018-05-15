@@ -138,16 +138,32 @@ class MMF:
 
         print(f'Mape: {day_eval[0][0]:.2f} Day: {day_eval[0][3]} Month: {day_eval[0][4]}')
 
-        line_up, = plt.plot(day_eval[0][1], label='Prediction')
-        line_down, = plt.plot(day_eval[0][2], label='Target')
+        best_predictions = DataHandler.consumption_to_kWh(day_eval[0][1])
+        best_targets = DataHandler.consumption_to_kWh(day_eval[0][2])
+        line_up, = plt.plot(best_predictions, label='Prediction')
+        line_down, = plt.plot(best_targets, label='Target')
         plt.legend(handles=[line_up, line_down])
+        plt.xlim(xmin=0, xmax=23)
+        plt.minorticks_on()
+        plt.subplots_adjust(top=1)
+        plt.xlabel('Hour of the day')
+        plt.ylabel('Energy consumption (kWh)')
+        plt.text(0.5, 0.4, f'MAPE: {day_eval[0][0]:.1f} %')
         plt.figure()
 
         print(f'Mape: {day_eval[-1][0]:.2f} Day: {day_eval[-1][3]} Month: {day_eval[-1][4]}')
 
-        line_up, = plt.plot(day_eval[-1][1], label='Prediction')
-        line_down, = plt.plot(day_eval[-1][2], label='Target')
+        worst_predictions = DataHandler.consumption_to_kWh(day_eval[-1][1])
+        worst_targets = DataHandler.consumption_to_kWh(day_eval[-1][2])
+        line_up, = plt.plot(worst_predictions, label='Prediction')
+        line_down, = plt.plot(worst_targets, label='Target')
         plt.legend(handles=[line_up, line_down])
+        plt.xlim(xmin=0, xmax=23)
+        plt.minorticks_on()
+        plt.subplots_adjust(top=1)
+        plt.xlabel('Hour of the day')
+        plt.ylabel('Energy consumption (kWh)')
+        plt.text(0.5, 0.4, f'MAPE: {day_eval[-1][0]:.1f} %')
         plt.figure()
 
         errors = []
@@ -155,9 +171,9 @@ class MMF:
         for e in day_eval:
             errors.append(e[0])
 
-        ModelEvaluator.plot_error_freq(errors)
+        ModelEvaluator.plot_abs_error_freq(errors)
+        ModelEvaluator.plot_cumu_abs_error_freq(errors)
 
-        plt.show()
 
 
 
