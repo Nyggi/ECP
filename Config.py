@@ -40,5 +40,5 @@ class Config:
 
         # If WEKA_FEATURES is True, FEATURES will not be used.
         self.WEKA_FEATURES = True
-        self.SMF = False
+        self.SMF_FEATURES = False
         self.WEKA_HOUSEHOLD_IDS = [5]

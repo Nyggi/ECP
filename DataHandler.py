@@ -3,6 +3,7 @@ from collections import namedtuple
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 from random import shuffle
+from random import randint
 
 
 HourData = namedtuple('HourData', ['house_id', 'timestamp', 'consumption'])
@@ -143,7 +144,7 @@ class DataHandler:
         else:
             amount_of_households = 'single'
 
-        if self.cfg.SMF:
+        if self.cfg.SMF_FEATURES:
             filepath = 'WEKA_features/best_features_from_WEKA_SMF/BestFeatures.csv'
         else:
             filepath = 'WEKA_features/best_features_from_WEKA_' + str(amount_of_households) + '/BestFeatures' + str(self.cfg.HOUR_TO_PREDICT) + '.csv'
