@@ -105,7 +105,8 @@ class ModelEvaluator:
                 plt.plot(x, p(x), linestyle='dashed', color='red')
                 plt.figure()
 
-    def plot_cumu_abs_error_freq(self, errors):
+    @staticmethod
+    def plot_cumu_abs_error_freq(errors):
         abs_errors = [abs(x) for x in errors]
 
         bins = 13  # Odd number
@@ -150,4 +151,31 @@ class ModelEvaluator:
         plt.ylabel("Frequency %")
         plt.xticks(np.arange(bin_min, bin_max + 1, step=10))
         plt.minorticks_on()
+        plt.figure()
+
+    @staticmethod
+    def plot_abs_error_freq(errors):
+        abs_errors = [abs(x) for x in errors]
+
+        bins = 13  # Odd number
+        bin_min = -2
+        bin_max = 50
+        bin_diff = abs(bin_min - bin_max) / bins
+        bins_list = [-10000]
+
+        for i in range(bins - 1):
+            bins_list.append(bin_min + (bin_diff * (i + 1)))
+
+        bins_list.append(10000)
+
+        weights = np.ones_like(errors) / float(len(errors)) * 100
+
+        plt.hist(abs_errors, bins=bins_list, weights=weights, edgecolor='black', linewidth=0.5)
+        plt.axvline(np.mean(abs_errors), color='k', linestyle='dashed', linewidth=1)
+        plt.xlim(xmin=0, xmax=bin_max)
+        plt.xlabel("MAPE %")
+        plt.ylabel("Frequency %")
+        plt.xticks(np.arange(0, bin_max + 1, step=10))
+        plt.minorticks_on()
+        plt.subplots_adjust(top=1)
         plt.figure()

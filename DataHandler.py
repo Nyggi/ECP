@@ -471,3 +471,7 @@ class DataHandler:
             scaled_data.append(HourData(data[j].house_id, data[j].timestamp, scaled_consumption[j][0]))
 
         return scaled_data
+
+    @staticmethod
+    def consumption_to_kWh(consumption):
+        return np.array(consumption) / 1000 / 60
