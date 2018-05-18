@@ -5,6 +5,7 @@ from ModelEvaluator import ModelEvaluator
 import numpy as np
 import matplotlib.pyplot as plt
 import EvalMetrics
+from keras import callbacks
 
 
 class MMF:
@@ -66,10 +67,15 @@ class MMF:
             model = self.models[i]
             dh = self.dhs[i]
 
-            X = np.array(dh.train_input)
-            y = np.array(dh.train_labels)
+            train_input = dh.train_input + dh.eval_input
+            train_labels = dh.train_labels + dh.eval_labels
 
-            model.fit(X, y, epochs=cfg.EPOCHS, batch_size=cfg.BATCH_SIZE, verbose=0)
+            X = np.array(train_input)
+            y = np.array(train_labels)
+
+            es = callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=50, verbose=0, mode='min')
+
+            model.fit(X, y, epochs=cfg.EPOCHS, batch_size=cfg.BATCH_SIZE, verbose=0, callbacks=[es], validation_split=1 - cfg.TRAINING_CUT)
 
     def eval_models(self, metrics):
         evals = []

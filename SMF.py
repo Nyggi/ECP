@@ -5,6 +5,7 @@ from ModelEvaluator import ModelEvaluator
 import numpy as np
 import matplotlib.pyplot as plt
 import EvalMetrics
+from keras import callbacks
 
 
 class SMF:
@@ -63,15 +64,26 @@ class SMF:
         train_input = []
         train_labels = []
 
+        eval_input = []
+        eval_labels = []
+
         for i in range(24):
             dh = self.dhs[i]
             train_input.extend(dh.train_input)
             train_labels.extend(dh.train_labels)
 
+            eval_input.extend(dh.eval_input)
+            eval_labels.extend(dh.eval_labels)
+
+        train_input.extend(eval_input)
+        train_labels.extend(eval_labels)
+
         X = np.array(train_input)
         y = np.array(train_labels)
 
-        self.model.fit(X, y, epochs=self.cfg.EPOCHS, batch_size=self.cfg.BATCH_SIZE, verbose=0)
+        es = callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=50, verbose=0, mode='min')
+
+        self.model.fit(X, y, epochs=self.cfg.EPOCHS, batch_size=self.cfg.BATCH_SIZE, verbose=0, callbacks=[es], validation_split=1 - self.cfg.TRAINING_CUT)
 
     def eval_model(self, metrics):
         evals = []

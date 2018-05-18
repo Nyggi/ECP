@@ -4,7 +4,8 @@ from keras.optimizers import *
 
 class Config:
     def __init__(self):
-        self.EPOCHS = 60
+        # This is not the amount of epochs, but the cap
+        self.EPOCHS = 10000
         self.BATCH_SIZE = 128
 
         self.HOUSE_ID = 5
@@ -16,15 +17,16 @@ class Config:
         self.WEEKS = 5
         self.DAYS = 5
 
-        self.HIDDEN_LAYERS = [100, 24, 4]
+        # 481, 10
+        self.HIDDEN_LAYERS = [481, 10]
 
         self.BIAS = True
         self.ACTIVATION_FUNCTION = 'tanh'
-        self.LOSS = losses.mean_absolute_error
-        self.OPTIMIZER = Adamax()
+        self.LOSS = losses.mean_squared_error
+        self.OPTIMIZER = Adam()
         self.SCALE_VALUES = True
         self.SCALE_RANGE = (-1, 1)
-        self.REMOVE_OUTLIERS = True
+        self.REMOVE_OUTLIERS = False
 
         self.TRAINING_CUT = 0.7
         self.DATA_SLICE = 1
@@ -35,7 +37,7 @@ class Config:
         # Same hours in past days past weeks
         # X hours past
         # Day of week
-        self.FEATURES = [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+        self.FEATURES = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1]
         self.PADDING = 0
 
         # If WEKA_FEATURES is True, FEATURES will not be used.
