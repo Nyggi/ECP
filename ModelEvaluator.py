@@ -222,3 +222,16 @@ class ModelEvaluator:
         plt.ylabel('Energy consumption (kWh)')
         plt.text(0.5, 0.4, f'MAPE: {mape:.1f} %')
         plt.figure()
+
+    @staticmethod
+    def plot_week_prediction(predictions, targets, mape):
+        line_up, = plt.plot(predictions, label='Prediction')
+        line_down, = plt.plot(targets, label='Target')
+        plt.legend(handles=[line_up, line_down])
+        plt.xlim(xmin=0, xmax=167)
+        plt.minorticks_on()
+        plt.subplots_adjust(top=1)
+        plt.xlabel('Hour of the day')
+        plt.ylabel('Energy consumption (kWh)')
+        plt.text(0.5, 0.8, f'MAPE: {mape:.1f} %')
+        plt.figure()

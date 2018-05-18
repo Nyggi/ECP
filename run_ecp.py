@@ -34,7 +34,9 @@ print(evals)
 
 ModelEvaluator.plot_mape_on_day(eval_indi, 'SMF')
 
+print("MMF")
 mmf.plot_days()
+print("SMF")
 smf.plot_days()
 mmf.plot_residual()
 smf.plot_residual()
