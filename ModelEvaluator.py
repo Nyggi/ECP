@@ -179,3 +179,46 @@ class ModelEvaluator:
         plt.minorticks_on()
         plt.subplots_adjust(top=1)
         plt.figure()
+
+    @staticmethod
+    def plot_residual(all_predictions, all_y_eval, title):
+        z = np.polyfit(all_predictions, all_y_eval, 1)
+        p = np.poly1d(z)
+        difference = all_y_eval - p(all_predictions)
+        # std = np.std(difference, ddof=1)
+        # standardized_residual = difference / std
+        plt.plot(all_predictions, difference, '.', alpha=0.1, color='black')
+        plt.axhline(0, color='grey', alpha=0.75)
+        plt.xlabel("Predicted consumption")
+        plt.ylabel("Residual")
+        plt.title(title)
+        plt.minorticks_on()
+        plt.figure()
+
+    @staticmethod
+    def plot_mape_on_day(mape_list, title):
+        mapes = np.array(mape_list).reshape(-1)
+        plot, = plt.plot(mapes, label='MAPE', color='red')
+        plt.axhline(np.mean(mapes), linestyle='dashed', color='red')
+        plt.legend(handles=[plot])
+        plt.xlim(xmin=0, xmax=23)
+        plt.minorticks_on()
+        plt.subplots_adjust(top=1)
+        plt.xlabel('Hour of the day')
+        plt.ylabel('MAPE %')
+        plt.text(0.5, 20, f'MAPE: {np.mean(mapes):.1f} %')
+        plt.title(title)
+        plt.figure()
+
+    @staticmethod
+    def plot_day_prediction(predictions, targets, mape):
+        line_up, = plt.plot(predictions, label='Prediction')
+        line_down, = plt.plot(targets, label='Target')
+        plt.legend(handles=[line_up, line_down])
+        plt.xlim(xmin=0, xmax=23)
+        plt.minorticks_on()
+        plt.subplots_adjust(top=1)
+        plt.xlabel('Hour of the day')
+        plt.ylabel('Energy consumption (kWh)')
+        plt.text(0.5, 0.4, f'MAPE: {mape:.1f} %')
+        plt.figure()

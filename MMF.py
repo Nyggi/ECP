@@ -140,31 +140,17 @@ class MMF:
 
         best_predictions = DataHandler.consumption_to_kWh(day_eval[0][1])
         best_targets = DataHandler.consumption_to_kWh(day_eval[0][2])
-        line_up, = plt.plot(best_predictions, label='Prediction')
-        line_down, = plt.plot(best_targets, label='Target')
-        plt.legend(handles=[line_up, line_down])
-        plt.xlim(xmin=0, xmax=23)
-        plt.minorticks_on()
-        plt.subplots_adjust(top=1)
-        plt.xlabel('Hour of the day')
-        plt.ylabel('Energy consumption (kWh)')
-        plt.text(0.5, 0.4, f'MAPE: {day_eval[0][0]:.1f} %')
-        plt.figure()
+        best_mape = day_eval[0][0]
+
+        ModelEvaluator.plot_day_prediction(best_predictions, best_targets, best_mape)
 
         print(f'Mape: {day_eval[-1][0]:.2f} Day: {day_eval[-1][3]} Month: {day_eval[-1][4]}')
 
         worst_predictions = DataHandler.consumption_to_kWh(day_eval[-1][1])
         worst_targets = DataHandler.consumption_to_kWh(day_eval[-1][2])
-        line_up, = plt.plot(worst_predictions, label='Prediction')
-        line_down, = plt.plot(worst_targets, label='Target')
-        plt.legend(handles=[line_up, line_down])
-        plt.xlim(xmin=0, xmax=23)
-        plt.minorticks_on()
-        plt.subplots_adjust(top=1)
-        plt.xlabel('Hour of the day')
-        plt.ylabel('Energy consumption (kWh)')
-        plt.text(0.5, 0.4, f'MAPE: {day_eval[-1][0]:.1f} %')
-        plt.figure()
+        worst_mape = day_eval[-1][0]
+
+        ModelEvaluator.plot_day_prediction(worst_predictions, worst_targets, worst_mape)
 
         errors = []
 
@@ -173,6 +159,20 @@ class MMF:
 
         ModelEvaluator.plot_abs_error_freq(errors)
         ModelEvaluator.plot_cumu_abs_error_freq(errors)
+
+    def plot_residual(self):
+        all_predictions = []
+        all_y_eval = []
+
+        for h in range(24):
+            evaluator = ModelEvaluator(self.cfgs[h], self.models[h], self.dhs[h])
+            predictions, y_eval = evaluator.get_eval_data()
+            predictions = np.reshape(predictions, (len(predictions)))
+            y_eval = np.reshape(y_eval, (len(y_eval)))
+            all_predictions.extend(predictions)
+            all_y_eval.extend(y_eval)
+
+        ModelEvaluator.plot_residual(all_predictions, all_y_eval, 'MMF')
 
 
 

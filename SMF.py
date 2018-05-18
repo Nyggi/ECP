@@ -138,17 +138,19 @@ class SMF:
 
         print(f'Mape: {day_eval[0][0]:.2f} Day: {day_eval[0][3]} Month: {day_eval[0][4]}')
 
-        line_up, = plt.plot(day_eval[0][1], label='Prediction')
-        line_down, = plt.plot(day_eval[0][2], label='Target')
-        plt.legend(handles=[line_up, line_down])
-        plt.figure()
+        best_predictions = DataHandler.consumption_to_kWh(day_eval[0][1])
+        best_targets = DataHandler.consumption_to_kWh(day_eval[0][2])
+        best_mape = day_eval[0][0]
+
+        ModelEvaluator.plot_day_prediction(best_predictions, best_targets, best_mape)
 
         print(f'Mape: {day_eval[-1][0]:.2f} Day: {day_eval[-1][3]} Month: {day_eval[-1][4]}')
 
-        line_up, = plt.plot(day_eval[-1][1], label='Prediction')
-        line_down, = plt.plot(day_eval[-1][2], label='Target')
-        plt.legend(handles=[line_up, line_down])
-        plt.figure()
+        worst_predictions = DataHandler.consumption_to_kWh(day_eval[-1][1])
+        worst_targets = DataHandler.consumption_to_kWh(day_eval[-1][2])
+        worst_mape = day_eval[-1][0]
+
+        ModelEvaluator.plot_day_prediction(worst_predictions, worst_targets, worst_mape)
 
         errors = []
 
@@ -158,3 +160,17 @@ class SMF:
         ModelEvaluator.plot_error_freq(errors)
 
         plt.show()
+
+    def plot_residual(self):
+        all_predictions = []
+        all_y_eval = []
+
+        for h in range(24):
+            evaluator = ModelEvaluator(self.cfg, self.model, self.dhs[h])
+            predictions, y_eval = evaluator.get_eval_data()
+            predictions = np.reshape(predictions, (len(predictions)))
+            y_eval = np.reshape(y_eval, (len(y_eval)))
+            all_predictions.extend(predictions)
+            all_y_eval.extend(y_eval)
+
+        ModelEvaluator.plot_residual(all_predictions, all_y_eval, 'SMF')

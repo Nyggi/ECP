@@ -2,7 +2,8 @@ from MMF import MMF
 from SMF import SMF
 import EvalMetrics
 import matplotlib.pyplot as plt
-import numpy as np
+from ModelEvaluator import ModelEvaluator
+
 
 mmf = MMF()
 smf = SMF()
@@ -19,6 +20,8 @@ for e in eval_indi:
 print("Total")
 print(evals)
 
+ModelEvaluator.plot_mape_on_day(eval_indi, 'MMF')
+
 eval_indi, evals = smf.eval_model([EvalMetrics.mape])
 
 print("SMF")
@@ -29,19 +32,11 @@ for e in eval_indi:
 print("Total")
 print(evals)
 
+ModelEvaluator.plot_mape_on_day(eval_indi, 'SMF')
+
 mmf.plot_days()
 smf.plot_days()
+mmf.plot_residual()
+smf.plot_residual()
 
-
-
-mapes = np.array(eval_indi).reshape(-1)
-plot, = plt.plot(mapes, label='MAPE', color='red')
-plt.axhline(np.mean(mapes), linestyle='dashed', color='red')
-plt.legend(handles=[plot])
-plt.xlim(xmin=0, xmax=23)
-plt.minorticks_on()
-plt.subplots_adjust(top=1)
-plt.xlabel('Hour of the day')
-plt.ylabel('MAPE %')
-plt.text(0.5, 20, f'MAPE: {np.mean(mapes):.1f} %')
 plt.show()
