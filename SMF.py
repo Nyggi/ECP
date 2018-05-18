@@ -146,21 +146,45 @@ class SMF:
 
             day_eval.append([mape, p, e, i % 7, i // 30])
 
+        week_eval = SMF._collect_week_eval(day_eval)
+
+        # Day
         day_eval.sort(key=lambda x: x[0])
 
         print(f'Mape: {day_eval[0][0]:.2f} Day: {day_eval[0][3]} Month: {day_eval[0][4]}')
 
-        line_up, = plt.plot(day_eval[0][1], label='Prediction')
-        line_down, = plt.plot(day_eval[0][2], label='Target')
-        plt.legend(handles=[line_up, line_down])
-        plt.figure()
+        best_predictions = DataHandler.consumption_to_kWh(day_eval[0][1])
+        best_targets = DataHandler.consumption_to_kWh(day_eval[0][2])
+        best_mape = day_eval[0][0]
+
+        ModelEvaluator.plot_day_prediction(best_predictions, best_targets, best_mape)
 
         print(f'Mape: {day_eval[-1][0]:.2f} Day: {day_eval[-1][3]} Month: {day_eval[-1][4]}')
 
-        line_up, = plt.plot(day_eval[-1][1], label='Prediction')
-        line_down, = plt.plot(day_eval[-1][2], label='Target')
-        plt.legend(handles=[line_up, line_down])
-        plt.figure()
+        worst_predictions = DataHandler.consumption_to_kWh(day_eval[-1][1])
+        worst_targets = DataHandler.consumption_to_kWh(day_eval[-1][2])
+        worst_mape = day_eval[-1][0]
+
+        ModelEvaluator.plot_day_prediction(worst_predictions, worst_targets, worst_mape)
+
+        # Week
+        week_eval.sort(key=lambda x: x[0])
+
+        print(f'Mape: {week_eval[0][0]:.2f} Week: {week_eval[0][3]}')
+
+        best_predictions = DataHandler.consumption_to_kWh(week_eval[0][1])
+        best_targets = DataHandler.consumption_to_kWh(week_eval[0][2])
+        best_mape = week_eval[0][0]
+
+        ModelEvaluator.plot_week_prediction(best_predictions, best_targets, best_mape)
+
+        print(f'Mape: {week_eval[-1][0]:.2f} Week: {week_eval[-1][3]}')
+
+        worst_predictions = DataHandler.consumption_to_kWh(week_eval[-1][1])
+        worst_targets = DataHandler.consumption_to_kWh(week_eval[-1][2])
+        worst_mape = week_eval[-1][0]
+
+        ModelEvaluator.plot_week_prediction(worst_predictions, worst_targets, worst_mape)
 
         errors = []
 
@@ -170,3 +194,32 @@ class SMF:
         ModelEvaluator.plot_error_freq(errors)
 
         plt.show()
+
+    @staticmethod
+    def _collect_week_eval(day_eval):
+        week_eval = []
+        for week in range(len(day_eval) // 7):
+            mapes = []
+            predictions = []
+            labels = []
+            for day in range(7):
+                index = week * 7 + day
+                mapes.append(day_eval[index][0])
+                predictions.extend(day_eval[index][1])
+                labels.extend(day_eval[index][2])
+            week_eval.append([np.mean(mapes), np.reshape(predictions, len(predictions)), np.reshape(labels, len(labels)), week])
+        return week_eval
+
+    def plot_residual(self):
+        all_predictions = []
+        all_y_eval = []
+
+        for h in range(24):
+            evaluator = ModelEvaluator(self.cfg, self.model, self.dhs[h])
+            predictions, y_eval = evaluator.get_eval_data()
+            predictions = np.reshape(predictions, (len(predictions)))
+            y_eval = np.reshape(y_eval, (len(y_eval)))
+            all_predictions.extend(predictions)
+            all_y_eval.extend(y_eval)
+
+        ModelEvaluator.plot_residual(all_predictions, all_y_eval, 'SMF')
