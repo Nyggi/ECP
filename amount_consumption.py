@@ -54,6 +54,7 @@ def run_smf(data_steps, reps):
         smf = SMF(cfg=cfg)
         inter_mape = []
         for i in range(reps):
+            print("Starting rep " + str(i))
             smf.model = smf.create_models()
             smf.train_model()
             evals = eval_model_smf(smf, [EvalMetrics.mape], base_dhs)
@@ -121,6 +122,7 @@ def run_mmf(data_steps, reps):
         mmf = MMF(cfgs=cfgs)
         inter_mape = []
         for i in range(reps):
+            print("Starting rep " + str(i))
             mmf.models = mmf.create_models()
             mmf.train_models()
             evals = eval_model_mmf(mmf, [EvalMetrics.mape], base_dhs)
@@ -130,18 +132,25 @@ def run_mmf(data_steps, reps):
     return mapes
 
 
-steps_week = [1, 2, 4, 8, 12, 16, 24, 32, 40, 48, 56, 64, 72]
+steps_week = [1, 2, 4, 8, 16, 32, 48, 72]
 data_steps = np.array(steps_week) / 72
 
-print('SMF')
-mapes_smf = run_smf(data_steps, 5)
-print('MMF')
-mapes_mmf = run_mmf(data_steps, 5)
+reps = 5
+# print('SMF')
+# mapes_smf = run_smf(data_steps, reps)
+# print(mapes_smf)
 
-plot_smf, = plt.plot(steps_week, mapes_smf, label='MAPE')
-plot_mmf, = plt.plot(steps_week, mapes_mmf, label='MAPE')
-plt.legend(handles=[plot_smf, plot_mmf])
-plt.minorticks_on()
-plt.xlabel('Number of weeks')
-plt.ylabel('MAPE %')
-plt.show()
+steps_week = [72]
+data_steps = np.array(steps_week) / 72
+
+print('MMF')
+mapes_mmf = run_mmf(data_steps, reps)
+print(mapes_mmf)
+
+# plot_smf, = plt.plot(steps_week, mapes_smf, label='MAPE')
+# plot_mmf, = plt.plot(steps_week, mapes_mmf, label='MAPE')
+# plt.legend(handles=[plot_smf, plot_mmf])
+# plt.minorticks_on()
+# plt.xlabel('Number of weeks')
+# plt.ylabel('MAPE %')
+# plt.show()
