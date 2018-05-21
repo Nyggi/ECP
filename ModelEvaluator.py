@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import EvalMetrics
+from DataHandler import DataHandler
 
 
 class ModelEvaluator:
@@ -182,15 +183,17 @@ class ModelEvaluator:
 
     @staticmethod
     def plot_residual(all_predictions, all_y_eval, title):
+        all_predictions = DataHandler.consumption_to_kWh(all_predictions)
+        all_y_eval = DataHandler.consumption_to_kWh(all_y_eval)
         z = np.polyfit(all_predictions, all_y_eval, 1)
         p = np.poly1d(z)
         difference = all_y_eval - p(all_predictions)
         # std = np.std(difference, ddof=1)
         # standardized_residual = difference / std
-        plt.plot(all_predictions, difference, '.', alpha=0.1, color='black')
-        plt.axhline(0, color='grey', alpha=0.75)
-        plt.xlabel("Predicted consumption")
-        plt.ylabel("Residual")
+        plt.plot(all_predictions, difference, '.', alpha=0.2, color='black')
+        plt.axhline(0, color='grey', alpha=0.85)
+        plt.xlabel("Predicted consumption (kWh)")
+        plt.ylabel("Residual (kWh)")
         plt.title(title)
         plt.minorticks_on()
         plt.figure()
