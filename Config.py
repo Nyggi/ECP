@@ -18,7 +18,7 @@ class Config:
         self.DAYS = 5
 
         # 481, 10
-        self.HIDDEN_LAYERS = [481, 10]
+        self.HIDDEN_LAYERS = [3]
 
         self.BIAS = True
         self.ACTIVATION_FUNCTION = 'tanh'
