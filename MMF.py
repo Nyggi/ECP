@@ -9,10 +9,18 @@ from keras import callbacks
 
 
 class MMF:
-    def __init__(self, house_id=None, verbose=False):
+    def __init__(self, cfgs=None, house_id=None, verbose=False, dhs=None):
         self.verbose = verbose
-        self.cfgs = self.create_configs(house_id)
-        self.dhs = self.create_datahandlers()
+        if not cfgs:
+            self.cfgs = self.create_configs(house_id)
+        else:
+            self.cfgs = cfgs
+
+        if not dhs:
+            self.dhs = self.create_datahandlers()
+        else:
+            self.dhs = dhs
+
         self.models = self.create_models()
 
     def create_configs(self, house_id):

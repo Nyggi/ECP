@@ -9,13 +9,18 @@ from keras import callbacks
 
 
 class SMF:
-    def __init__(self, cfg=None, house_id=None, verbose=False):
+    def __init__(self, cfg=None, house_id=None, verbose=False, dhs=None):
         self.verbose = verbose
         if not cfg:
             self.cfg = self.create_config(house_id)
         else:
             self.cfg = cfg
-        self.dhs = self.create_datahandlers()
+
+        if not dhs:
+            self.dhs = self.create_datahandlers()
+        else:
+            self.dhs = dhs
+
         self.model = self.create_models()
 
     def create_config(self, house_id):
@@ -40,9 +45,7 @@ class SMF:
             cfg.SMF_FEATURES = True
             cfg.HOUSE_ID = self.cfg.HOUSE_ID
             cfg.HOUR_TO_PREDICT = h
-            cfg.FEATURES = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1]
-            # [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0] FF
-            # [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1] BW
+
             dhs.append(DataHandler(cfg))
 
         return dhs

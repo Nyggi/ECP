@@ -5,7 +5,92 @@ from Config import Config
 from matplotlib import pyplot as plt
 import matplotlib.ticker as ticker
 from SMF import SMF
+from MMF import MMF
 import EvalMetrics
+
+
+def run_tester_smf(dhs):
+    evaluations = []
+    nr = 0
+
+    for cfg in configs:
+        print("Config: " + str(nr))
+
+        total = 0
+        iterations = 10
+
+        for i in range(iterations):
+            smf = SMF(cfg, dhs=dhs)
+
+            smf.train_model()
+
+            eval_indi, evals = smf.eval_model([EvalMetrics.mape])
+
+            total += evals[0]
+
+            print(f'MAPE: {evals[0]:.2f} {cfg.HIDDEN_LAYERS}')
+
+        evaluations.append(total / iterations)
+
+        nr += 1
+
+    return evaluations
+
+
+def run_tester_mmf(dhs):
+    evaluations = []
+    nr = 0
+
+    for cfgs in configs:
+        print("Config: " + str(nr))
+
+        total = 0
+        iterations = 10
+
+        for i in range(iterations):
+            mmf = MMF(cfgs, dhs=dhs)
+
+            mmf.train_models()
+
+            eval_indi, evals = mmf.eval_models([EvalMetrics.mape])
+
+            total += evals[0]
+
+            print(f'MAPE: {evals[0]:.2f} {cfgs[0].HIDDEN_LAYERS}')
+
+        evaluations.append(total / iterations)
+
+        nr += 1
+
+    return evaluations
+
+
+def smf_dhs():
+    dhs = []
+
+    for h in range(24):
+        cfg = Config()
+        cfg.SMF_FEATURES = True
+        cfg.HOUSE_ID = 5
+        cfg.HOUR_TO_PREDICT = h
+
+        dhs.append(DataHandler(cfg))
+
+    return dhs
+
+
+def mmf_dhs():
+    dhs = []
+
+    for h in range(24):
+        cfg = Config()
+        cfg.SMF_FEATURES = False
+        cfg.HOUSE_ID = 5
+        cfg.HOUR_TO_PREDICT = h
+
+        dhs.append(DataHandler(cfg))
+
+    return dhs
 
 
 def hidden():
@@ -55,7 +140,7 @@ def hidden_2():
 def hidden_1():
     configs = []
 
-    layer0 = range(1, 250, 10)
+    layer0 = range(1, 25, 2)
     x = [w for w in layer0]
 
     for i in layer0:
@@ -67,32 +152,34 @@ def hidden_1():
     return configs, x
 
 
+def hidden_1_mmf():
+    configs = []
+
+    layer0 = range(1, 25, 2)
+    x = [w for w in layer0]
+
+    for i in layer0:
+        hours = []
+        for h in range(24):
+            c = Config()
+            c.HIDDEN_LAYERS = [i]
+            hours.append(c)
+
+        configs.append(hours)
+
+    return configs, x
+
+
 # configs, x, y = hidden_2()
+
+# configs, x = hidden_1_mmf()
 configs, x = hidden_1()
 
-evaluations = []
-nr = 0
 
-for cfg in configs:
-    print("Config: " + str(nr))
+# dhs = mmf_dhs()
+dhs = smf_dhs()
 
-    total = 0
-    iterations = 1
-
-    for i in range(iterations):
-        smf = SMF(cfg)
-
-        smf.train_model()
-
-        eval_indi, evals = smf.eval_model([EvalMetrics.mape])
-
-        total += evals[0]
-
-        print(f'MAPE: {evals[0]:.2f} {cfg.HIDDEN_LAYERS}')
-
-    evaluations.append(total / iterations)
-
-    nr += 1
+evaluations = run_tester_smf(dhs)
 
 
 if 'y' in locals():
