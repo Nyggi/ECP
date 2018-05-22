@@ -28,8 +28,10 @@ class Config:
         self.SCALE_RANGE = (-1, 1)
         self.REMOVE_OUTLIERS = False
 
+        total_weeks = 104  # 104 weeks is 2 years
+        weeks_for_training = 4
         self.TRAINING_CUT = 0.7
-        self.DATA_SLICE = 2 / int(self.TRAINING_CUT * 104)  # 104 weeks is 2 years
+        self.DATA_SLICE = weeks_for_training / int(self.TRAINING_CUT * total_weeks)
 
         # Features
         # Same hours in past days past weeks
