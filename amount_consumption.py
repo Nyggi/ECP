@@ -140,17 +140,24 @@ reps = 5
 # mapes_smf = run_smf(data_steps, reps)
 # print(mapes_smf)
 
-steps_week = [72]
+steps_week = [8]
 data_steps = np.array(steps_week) / 72
 
-print('MMF')
-mapes_mmf = run_mmf(data_steps, reps)
-print(mapes_mmf)
+# print('MMF')
+# mapes_mmf = run_mmf(data_steps, reps)
+# print(mapes_mmf)
 
-# plot_smf, = plt.plot(steps_week, mapes_smf, label='MAPE')
-# plot_mmf, = plt.plot(steps_week, mapes_mmf, label='MAPE')
-# plt.legend(handles=[plot_smf, plot_mmf])
-# plt.minorticks_on()
-# plt.xlabel('Number of weeks')
-# plt.ylabel('MAPE %')
-# plt.show()
+steps_week_smf = [1, 2, 4, 8, 16, 24, 32, 48, 72]
+mapes_smf = [14.7350, 14.8394, 15.6089, 15.5355, 15.5062, 14.9700, 14.6022, 14.7981, 14.7698]
+
+steps_week_mmf = [4, 8, 16, 24, 32, 48, 72]
+mapes_mmf = [79.2206, 46.7630, 37.1217, 29.6381, 19.4411, 15.7499, 14.5742]
+
+plot_smf, = plt.plot(steps_week_smf, mapes_smf, label='SMF')
+plot_mmf, = plt.plot(steps_week_mmf, mapes_mmf, label='MMF')
+plt.legend(handles=[plot_smf, plot_mmf])
+plt.minorticks_on()
+plt.xlabel('Weeks of training')
+plt.ylabel('MAPE %')
+plt.subplots_adjust(top=1)
+plt.show()

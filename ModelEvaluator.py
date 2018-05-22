@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import EvalMetrics
 from DataHandler import DataHandler
+from scipy import stats
 
 
 class ModelEvaluator:
@@ -187,15 +188,56 @@ class ModelEvaluator:
         all_y_eval = DataHandler.consumption_to_kWh(all_y_eval)
         z = np.polyfit(all_predictions, all_y_eval, 1)
         p = np.poly1d(z)
-        difference = all_y_eval - p(all_predictions)
+        difference = p(all_predictions) - all_y_eval
         # std = np.std(difference, ddof=1)
         # standardized_residual = difference / std
-        plt.plot(all_predictions, difference, '.', alpha=0.2, color='black')
-        plt.axhline(0, color='grey', alpha=0.85)
+        ModelEvaluator.plot_confidence(all_predictions, difference, title)
+        # plt.plot(all_predictions, difference, '.', alpha=0.2, color='black')
+        # plt.axhline(0, color='grey', alpha=0.85)
+        # plt.xlabel("Predicted consumption (kWh)")
+        # plt.ylabel("Residual (kWh)")
+        # plt.title(title)
+        # plt.minorticks_on()
+        # plt.figure()
+
+    @staticmethod
+    def plot_confidence(x, y, title): # https://stackoverflow.com/questions/27164114/show-confidence-limits-and-prediction-limits-in-scatter-plot
+        # Modeling with Numpy
+        p, cov = np.polyfit(x, y, 1, cov=True)  # parameters and covariance from of the fit
+        y_model = np.polyval(p, x)  # model using the fit parameters; NOTE: parameters here are coefficients
+
+        # Statistics
+        n = x.size  # number of observations
+        m = p.size  # number of parameters
+        DF = n - m  # degrees of freedom
+        t = stats.t.ppf(0.95, n - m)  # used for CI and PI bands
+
+        # Estimates of Error in Data/Model
+        resid = y - y_model
+        chi2 = np.sum((resid / y_model) ** 2)  # chi-squared; estimates error in data
+        chi2_red = chi2 / DF  # reduced chi-squared; measures goodness of fit
+        s_err = np.sqrt(np.sum(resid ** 2) / DF)  # standard deviation of the error
+
+        # Plotting --------------------------------------------------------------------
+        # Data
+        plt.plot(x, y, ".", alpha=0.2, color="black")
+
+        # Fit
+        plot_fit, = plt.plot(x, y_model, "-", color="0.1", linewidth=1.5, alpha=0.5, label="Fit")
+
+        x2 = np.linspace(np.min(x), np.max(x), 100)
+        y2 = np.linspace(np.min(y_model), np.max(y_model), 100)
+
+        # Prediction Interval
+        pi = t * s_err * np.sqrt(1 + 1 / n + (x2 - np.mean(x)) ** 2 / np.sum((x - np.mean(x)) ** 2))
+        plot_limit, = plt.plot(x2, y2 - pi, "--", color="0.5", label="95% Confidence Intervals")
+
+        plt.plot(x2, y2 + pi, "--", color="0.5")
+        plt.title(title)
         plt.xlabel("Predicted consumption (kWh)")
         plt.ylabel("Residual (kWh)")
-        plt.title(title)
         plt.minorticks_on()
+        plt.legend(handles=[plot_fit, plot_limit])
         plt.figure()
 
     @staticmethod
