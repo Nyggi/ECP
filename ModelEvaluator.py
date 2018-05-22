@@ -278,5 +278,5 @@ class ModelEvaluator:
         plt.subplots_adjust(top=1)
         plt.xlabel('Hour of the day')
         plt.ylabel('Energy consumption (kWh)')
-        plt.text(0.5, 0.8, f'MAPE: {mape:.1f} %')
+        plt.text(3.5, 0.8, f'MAPE: {mape:.1f} %')
         plt.figure()
