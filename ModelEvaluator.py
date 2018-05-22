@@ -230,7 +230,7 @@ class ModelEvaluator:
 
         # Prediction Interval
         pi = t * s_err * np.sqrt(1 + 1 / n + (x2 - np.mean(x)) ** 2 / np.sum((x - np.mean(x)) ** 2))
-        plot_limit, = plt.plot(x2, y2 - pi, "--", color="0.5", label="95% Confidence Intervals")
+        plot_limit, = plt.plot(x2, y2 - pi, "--", color="0.5", label="95% Confidence Interval (obs.)")
 
         plt.plot(x2, y2 + pi, "--", color="0.5")
         plt.title(title)
