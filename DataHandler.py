@@ -421,35 +421,17 @@ class DataHandler:
         return X, y
 
     def _construct_training_data(self, data):
-        sliced_data = data[:int(len(data) * self.cfg.DATA_SLICE)]
+        sliced_data = data  # data[:int(len(data) * self.cfg.DATA_SLICE)]
 
         if self.cfg.WEKA_FEATURES:
             input_data, labels = self._extract_features_weka(sliced_data)
         else:
             input_data, labels = self._extract_features(sliced_data)
 
-        if self.cfg.SHUFFLE:
-            shuffled_data = []
-
-            for i in range(len(input_data)):
-                shuffled_data.append([input_data[i], labels[i]])
-
-            shuffle(shuffled_data)
-
-            input_data_shuffled = []
-            labels_shuffled = []
-
-            for i in range(len(input_data)):
-                input_data_shuffled.append(shuffled_data[i][0])
-                labels_shuffled.append(shuffled_data[i][1])
-
-            input_data = input_data_shuffled
-            labels = labels_shuffled
-
         validation_cut = int(len(input_data) * self.cfg.TRAINING_CUT)
 
-        train_input = input_data[0:validation_cut]
-        train_labels = labels[0:validation_cut]
+        train_input = input_data[0:int(validation_cut * self.cfg.DATA_SLICE)]
+        train_labels = labels[0:int(validation_cut * self.cfg.DATA_SLICE)]
 
         eval_input = input_data[validation_cut:]
         eval_labels = labels[validation_cut:]

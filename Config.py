@@ -29,9 +29,7 @@ class Config:
         self.REMOVE_OUTLIERS = False
 
         self.TRAINING_CUT = 0.7
-        self.DATA_SLICE = 1
-        self.GRAPH_CUT = 1
-        self.SHUFFLE = False
+        self.DATA_SLICE = 2 / int(self.TRAINING_CUT * 104)  # 104 weeks is 2 years
 
         # Features
         # Same hours in past days past weeks
