@@ -230,7 +230,7 @@ class ModelEvaluator:
 
         # Prediction Interval
         pi = t * s_err * np.sqrt(1 + 1 / n + (x2 - np.mean(x)) ** 2 / np.sum((x - np.mean(x)) ** 2))
-        plot_limit, = plt.plot(x2, y2 - pi, "--", color="0.5", label="95% Confidence Intervals")
+        plot_limit, = plt.plot(x2, y2 - pi, "--", color="0.5", label="95% Confidence Interval (obs.)")
 
         plt.plot(x2, y2 + pi, "--", color="0.5")
         plt.title(title)
@@ -278,5 +278,5 @@ class ModelEvaluator:
         plt.subplots_adjust(top=1)
         plt.xlabel('Hour of the day')
         plt.ylabel('Energy consumption (kWh)')
-        plt.text(0.5, 0.8, f'MAPE: {mape:.1f} %')
+        plt.text(3.5, 0.8, f'MAPE: {mape:.1f} %')
         plt.figure()
