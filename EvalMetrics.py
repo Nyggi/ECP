@@ -32,3 +32,9 @@ def pe(predictions, y_eval):
     pe = errors / y_eval * 100
 
     return pe.reshape(-1)
+
+
+# Mean Absolute Error
+def mae(predictions, y_eval):
+    mae = (sum(abs(predictions - y_eval)) / len(y_eval))[0]
+    return mae / 1000 / 60

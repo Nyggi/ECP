@@ -31,16 +31,32 @@ class BaselineModel:
         return data
 
     def eval_model(self):
-        predictions = []
-        labels = []
+        metrics = [EvalMetrics.mape, EvalMetrics.mer, EvalMetrics.mae]
 
-        for hour in range(24 * 7, len(self.data)):
-            predictions.append(self.predict(hour))
-            labels.append(self.data[hour].consumption)
+        predictions_list = []
+        labels_list = []
 
-        evaluation = EvalMetrics.mape(np.array(predictions), np.array(labels))
+        for i in range(24):
+            predictions_list.append([])
+            labels_list.append([])
 
-        return evaluation
+        start = int(0.7 * len(self.data))
+
+        for hour in range(start + (24 * 7), len(self.data)):
+            predictions_list[hour % 24].append([self.predict(hour)])
+            labels_list[hour % 24].append([self.data[hour].consumption])
+
+        all_eval_values = []
+
+        for i in range(24):
+            eval_values = []
+
+            for metric in metrics:
+                eval_values.append(metric(np.array(predictions_list[i]), np.array(labels_list[i])))
+
+            all_eval_values.append(eval_values)
+
+        return all_eval_values
 
     def predict(self, hour):
         if hour - 24 < 0:
